@@ -119,6 +119,7 @@
             justify-content: center;
             gap: 8px;
             font-size: 0.95rem;
+            text-decoration: none;
         }
 
         .btn-outline {
@@ -828,8 +829,11 @@
             </nav>
             
             <div class="auth-buttons">
-                <button class="btn btn-outline" onclick="login.html">
-                    <i class="login.html"></i> Entrar/Cadastrar
+                <a href="login.html" class="btn btn-outline">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </a>
+                <button class="btn btn-primary" onclick="openModal('registerModal')">
+                    <i class="fas fa-user-plus"></i> Cadastrar
                 </button>
             </div>
             
@@ -843,11 +847,11 @@
     <section class="hero">
         <div class="hero-content">
             <h2>Gestão Simplificada de Casos Jurídicos</h2>
-            <p>Organize, acompanhe e gerencie seus casos jurídicos de forma eficiente com a plataforma <span class="highlight">Bixx Acordos</span>. Tudo que você precisa em um só lugar.</p>
+            <p>Organize, acompanhe e gerencie seus casos jurídicos de forma eficiente com a plataforma <span class="highlight">BIXXJURIS</span>. Tudo que você precisa em um só lugar.</p>
             <div class="price-tag">Plano Único: R$ 80/mês</div>
             <div class="cta-buttons">
                 <button class="btn btn-primary" onclick="openModal('registerModal')">
-                    <i class="login.html"></i> Começar Agora
+                    <i class="fas fa-rocket"></i> Começar Agora
                 </button>
                 <button class="btn btn-secondary" onclick="scrollToSection('features')">
                     <i class="fas fa-play-circle"></i> Ver Funcionalidades
@@ -1074,51 +1078,16 @@
             <div class="footer-column">
                 <h3>Contato</h3>
                 <ul class="contact-info">
-                    <li><i class="fas fa-envelope"></i> contato@bixxacordos.com</li>
+                    <li><i class="fas fa-envelope"></i> contato@bixxjuris.com</li>
                     <li><i class="fas fa-phone"></i> (11) 9999-9999</li>
                     <li><i class="fas fa-map-marker-alt"></i> São Paulo, SP</li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 BIXXJURIS. Todos os direitos reservados.</p>
+            <p>&copy; 2023 BIXXJURIS. Todos os direitos reservados.</p>
         </div>
     </footer>
-
-    <!-- Modal de Login -->
-    <div class="modal" id="loginModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Entrar na Plataforma</h3>
-                <button class="close-modal" onclick="closeModal('loginModal')">&times;</button>
-            </div>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="loginEmail">E-mail</label>
-                    <input type="email" id="loginEmail" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Senha</label>
-                    <div class="password-container">
-                        <input type="password" id="loginPassword" required>
-                        <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="form-options">
-                    <label>
-                        <input type="checkbox"> Lembrar-me
-                    </label>
-                    <a href="#">Esqueci minha senha</a>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Entrar</button>
-            </form>
-            <div class="auth-switch">
-                <p>Não tem uma conta? <a href="#" onclick="switchToRegister()">Cadastre-se</a></p>
-            </div>
-        </div>
-    </div>
 
     <!-- Modal de Cadastro -->
     <div class="modal" id="registerModal">
@@ -1162,7 +1131,7 @@
                 <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
             </form>
             <div class="auth-switch">
-                <p>Já tem uma conta? <a href="#" onclick="switchToLogin()">Faça login</a></p>
+                <p>Já tem uma conta? <a href="login.html">Faça login</a></p>
             </div>
         </div>
     </div>
@@ -1179,36 +1148,7 @@
             document.body.style.overflow = 'auto';
         }
 
-        function switchToRegister() {
-            closeModal('loginModal');
-            openModal('registerModal');
-        }
-
-        function switchToLogin() {
-            closeModal('registerModal');
-            openModal('loginModal');
-        }
-
-        // Fechar modal ao clicar fora dele
-        window.onclick = function(event) {
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                }
-            });
-        }
-
-        // Manipular formulários
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            // Em produção, aqui seria a integração com o backend
-            alert('Login realizado com sucesso! Redirecionando...');
-            // Redirecionar para o dashboard
-            // window.location.href = 'dashboard.html'; // Substituir pelo caminho correto
-        });
-
+        // Manipular formulário de cadastro
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const password = document.getElementById('registerPassword').value;
@@ -1222,7 +1162,7 @@
             // Em produção, aqui seria a integração com o backend
             alert('Cadastro realizado com sucesso! Faça login para continuar.');
             closeModal('registerModal');
-            openModal('loginModal');
+            window.location.href = 'login.html';
         });
 
         // FAQ Accordion
