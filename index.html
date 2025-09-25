@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bixx Acordos - Gestão Simplificada de Casos Jurídicos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Variáveis CSS para cores */
         :root {
@@ -1309,14 +1310,18 @@
                 // Modo edição
                 formTitle.textContent = 'Editar Caso';
                 const caseItem = cases.find(c => c.id === caseId);
-                
-                document.getElementById('caseId').value = caseItem.id;
-                document.getElementById('caseTitle').value = caseItem.title;
-                document.getElementById('caseDescription').value = caseItem.description;
-                document.getElementById('caseClient').value = caseItem.client;
-                document.getElementById('caseValue').value = caseItem.value || '';
-                document.getElementById('caseStatus').value = caseItem.status;
-                document.getElementById('caseDate').value = caseItem.date;
+                if (caseItem) {
+                    document.getElementById('caseId').value = caseItem.id;
+                    document.getElementById('caseTitle').value = caseItem.title || '';
+                    document.getElementById('caseDescription').value = caseItem.description || '';
+                    document.getElementById('caseClient').value = caseItem.client || '';
+                    document.getElementById('caseValue').value = caseItem.value || '';
+                    document.getElementById('caseStatus').value = caseItem.status || 'pending';
+                    document.getElementById('caseDate').value = caseItem.date || '';
+                } else {
+                    alert('Caso não encontrado!');
+                    showPage('cases');
+                }
             } else {
                 // Modo novo caso
                 formTitle.textContent = 'Novo Caso';
@@ -1455,10 +1460,10 @@
                     <td>${client.activeCases}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn btn-outline btn-sm">
+                            <button class="btn btn-outline btn-sm" onclick="viewClientEmail('${client.email}')">
                                 <i class="fas fa-envelope"></i>
                             </button>
-                            <button class="btn btn-outline btn-sm">
+                            <button class="btn btn-outline btn-sm" onclick="viewClientPhone('${client.phone}')">
                                 <i class="fas fa-phone"></i>
                             </button>
                         </div>
@@ -1466,6 +1471,15 @@
                 `;
                 clientsTable.appendChild(row);
             });
+        }
+        
+        // Funções para visualizar e-mail e telefone do cliente
+        function viewClientEmail(email) {
+            alert(`E-mail do cliente: ${email}`);
+        }
+        
+        function viewClientPhone(phone) {
+            alert(`Telefone do cliente: ${phone}`);
         }
         
         // Atualizar relatórios
@@ -1485,6 +1499,8 @@
         // Manipular geração de relatório
         function handleReportGenerate(e) {
             e.preventDefault();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
             const type = document.getElementById('reportType').value;
             const period = document.getElementById('reportPeriod').value;
             let startDate, endDate;
@@ -1510,29 +1526,37 @@
                 return c.userId === currentUser.id && caseDate >= startDate && caseDate <= endDate;
             });
             
-            let reportText = `Relatório de ${type} para o período: ${formatDate(startDate)} a ${formatDate(endDate)}\n\n`;
+            let yPos = 10;
+            doc.text(`Relatório de ${type} para o período: ${formatDate(startDate)} a ${formatDate(endDate)}`, 10, yPos);
+            yPos += 10;
             
             if (type === 'cases') {
                 const pending = filteredCases.filter(c => c.status === 'pending').length;
                 const inProgress = filteredCases.filter(c => c.status === 'in-progress').length;
                 const resolved = filteredCases.filter(c => c.status === 'resolved').length;
                 const agreed = filteredCases.filter(c => c.status === 'agreed').length;
-                reportText += `Pendentes: ${pending}\nEm andamento: ${inProgress}\nResolvidos: ${resolved}\nAcordados: ${agreed}`;
+                doc.text(`Pendentes: ${pending}`, 10, yPos);
+                yPos += 10;
+                doc.text(`Em andamento: ${inProgress}`, 10, yPos);
+                yPos += 10;
+                doc.text(`Resolvidos: ${resolved}`, 10, yPos);
+                yPos += 10;
+                doc.text(`Acordados: ${agreed}`, 10, yPos);
             } else if (type === 'financial') {
                 const totalValue = filteredCases.reduce((sum, c) => sum + (c.value || 0), 0);
-                reportText += `Valor Total: R$ ${totalValue.toFixed(2)}`;
+                doc.text(`Valor Total: R$ ${totalValue.toFixed(2)}`, 10, yPos);
             } else if (type === 'clients') {
                 const clientsMap = new Map();
                 filteredCases.forEach(c => {
                     clientsMap.set(c.client, (clientsMap.get(c.client) || 0) + 1);
                 });
                 clientsMap.forEach((count, client) => {
-                    reportText += `${client}: ${count} casos\n`;
+                    doc.text(`${client}: ${count} casos`, 10, yPos);
+                    yPos += 10;
                 });
             }
             
-            alert(reportText);
-            // Em produção, poderia gerar PDF ou CSV
+            doc.save('relatorio.pdf');
         }
         
         // Configurar página de configurações
