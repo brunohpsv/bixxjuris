@@ -541,7 +541,7 @@
         .text-center { text-align: center; }
         .mb-20 { margin-bottom: 20px; }
         .mt-20 { margin-top: 20px; }
-        .d-none { display: none; }
+        .d-none { display: none !important; }
         .d-flex { display: flex; }
         .justify-between { justify-content: space-between; }
         .align-center { align-items: center; }
@@ -1068,35 +1068,42 @@
         // --- Gerenciamento de Páginas e Navegação ---
 
         function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.add('d-none');
-            });
-            document.getElementById(pageId + 'Page').classList.remove('d-none');
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.add('d-none');
+        });
+        document.getElementById(pageId + 'Page').classList.remove('d-none');
 
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`.menu-item[data-page="${pageId}"]`).classList.add('active');
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelector(`.menu-item[data-page="${pageId}"]`).classList.add('active');
 
-            // Atualiza o conteúdo dinâmico
-            if (pageId === 'cases') {
-                fetchCases();
-            } else if (pageId === 'clients') {
-                fetchClients();
-            } else if (pageId === 'dashboard') {
-                fetchDashboardData();
-            }
+        // Atualiza o conteúdo dinâmico
+        if (pageId === 'cases') {
+            fetchCases();
+        } else if (pageId === 'clients') {
+            fetchClients();
+        } else if (pageId === 'dashboard') {
+            fetchDashboardData();
         }
+    }
 
         function showLoginPage() {
-            landingPage.classList.add('d-none');
-            loginPage.classList.remove('d-none');
-        }
+    console.log('showLoginPage chamada'); // Para debug
+    landingPage.classList.add('d-none');
+    loginPage.classList.remove('d-none');
+    app.classList.add('d-none');
+    
+    // Verifica se as classes foram aplicadas corretamente
+    console.log('Landing page hidden:', landingPage.classList.contains('d-none'));
+    console.log('Login page visible:', !loginPage.classList.contains('d-none'));
+}
 
         function showApp() {
-            loginPage.classList.add('d-none');
-            app.classList.remove('d-none');
-        }
+    landingPage.classList.add('d-none'); // Adicione esta linha
+    loginPage.classList.add('d-none');
+    app.classList.remove('d-none');
+}
 
         function showRegisterForm() {
             document.getElementById('toggleLoginText').innerHTML = 'Já tem uma conta? <a href="#" onclick="showLoginForm()">Faça login</a>';
