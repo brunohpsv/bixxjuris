@@ -973,7 +973,7 @@
             </div>
             
             <div id="modalCaseContent">
-                <!-- Conteúdo será preenchido via JavaScript -->
+                <!-- Conteúdo será preenchidos via JavaScript -->
             </div>
             
             <div class="action-buttons mt-20">
@@ -1038,6 +1038,14 @@
             document.getElementById('reportPeriod').addEventListener('change', function() {
                 document.getElementById('customDateRange').classList.toggle('d-none', this.value !== 'custom');
             });
+            
+            // Novos listeners
+            document.getElementById('reportForm').addEventListener('submit', handleReportGenerate);
+            document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
+            document.getElementById('passwordForm').addEventListener('submit', handlePasswordChange);
+            document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileSidebar);
+            document.getElementById('caseSearch').addEventListener('input', filterCases);
+            document.getElementById('statusFilter').addEventListener('change', filterCases);
         }
         
         // Inicializar dados de exemplo
@@ -1178,6 +1186,12 @@
             }
         }
         
+        // Alternar sidebar mobile
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+        
         // Mostrar página específica
         function showPage(pageName) {
             // Ocultar todas as páginas
@@ -1240,35 +1254,7 @@
         
         // Atualizar tabela de casos
         function updateCasesTable() {
-            const casesTable = document.getElementById('casesTable');
-            casesTable.innerHTML = '';
-            
-            const userCases = cases.filter(c => c.userId === currentUser.id);
-            
-            userCases.forEach(caseItem => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${caseItem.title}</td>
-                    <td>${caseItem.client}</td>
-                    <td>R$ ${caseItem.value ? caseItem.value.toFixed(2) : '0.00'}</td>
-                    <td><span class="status-badge status-${caseItem.status}">${getStatusText(caseItem.status)}</span></td>
-                    <td>${formatDate(caseItem.date)}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn btn-outline btn-sm" onclick="viewCase(${caseItem.id})">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-outline btn-sm" onclick="editCaseForm(${caseItem.id})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteCase(${caseItem.id})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                casesTable.appendChild(row);
-            });
+            filterCases(); // Chama o filtro para atualizar com os valores atuais
         }
         
         // Filtrar casos
@@ -1442,24 +1428,25 @@
             clientsTable.innerHTML = '';
             
             // Extrair clientes únicos dos casos
-            const clients = [];
+            const clientsMap = new Map();
             const userCases = cases.filter(c => c.userId === currentUser.id);
             
             userCases.forEach(caseItem => {
-                if (!clients.find(c => c.name === caseItem.client)) {
-                    const clientCases = userCases.filter(c => c.client === caseItem.client);
-                    const activeCases = clientCases.filter(c => c.status === 'pending' || c.status === 'in-progress').length;
-                    
-                    clients.push({
+                if (!clientsMap.has(caseItem.client)) {
+                    clientsMap.set(caseItem.client, {
                         name: caseItem.client,
                         email: `${caseItem.client.replace(/\s+/g, '').toLowerCase()}@exemplo.com`,
-                        phone: '(11) 9' + Math.floor(1000 + Math.random() * 9000) + '-' + Math.floor(1000 + Math.random() * 9000),
-                        activeCases: activeCases
+                        phone: '(11) 9' + Math.floor(10000000 + Math.random() * 90000000), // Telefone fixo gerado uma vez
+                        activeCases: 0
                     });
+                }
+                const client = clientsMap.get(caseItem.client);
+                if (caseItem.status === 'pending' || caseItem.status === 'in-progress') {
+                    client.activeCases++;
                 }
             });
             
-            clients.forEach(client => {
+            clientsMap.forEach(client => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${client.name}</td>
@@ -1495,11 +1482,123 @@
             document.getElementById('reportTotalValue').textContent = `R$ ${totalValue.toFixed(2)}`;
         }
         
+        // Manipular geração de relatório
+        function handleReportGenerate(e) {
+            e.preventDefault();
+            const type = document.getElementById('reportType').value;
+            const period = document.getElementById('reportPeriod').value;
+            let startDate, endDate;
+            
+            if (period === 'custom') {
+                startDate = new Date(document.getElementById('startDate').value);
+                endDate = new Date(document.getElementById('endDate').value);
+            } else {
+                endDate = new Date();
+                if (period === 'month') {
+                    startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+                } else if (period === 'quarter') {
+                    startDate = new Date(endDate.getFullYear(), Math.floor(endDate.getMonth() / 3) * 3, 1);
+                } else if (period === 'year') {
+                    startDate = new Date(endDate.getFullYear(), 0, 1);
+                } else {
+                    startDate = new Date(0); // Todo o período
+                }
+            }
+            
+            const filteredCases = cases.filter(c => {
+                const caseDate = new Date(c.date);
+                return c.userId === currentUser.id && caseDate >= startDate && caseDate <= endDate;
+            });
+            
+            let reportText = `Relatório de ${type} para o período: ${formatDate(startDate)} a ${formatDate(endDate)}\n\n`;
+            
+            if (type === 'cases') {
+                const pending = filteredCases.filter(c => c.status === 'pending').length;
+                const inProgress = filteredCases.filter(c => c.status === 'in-progress').length;
+                const resolved = filteredCases.filter(c => c.status === 'resolved').length;
+                const agreed = filteredCases.filter(c => c.status === 'agreed').length;
+                reportText += `Pendentes: ${pending}\nEm andamento: ${inProgress}\nResolvidos: ${resolved}\nAcordados: ${agreed}`;
+            } else if (type === 'financial') {
+                const totalValue = filteredCases.reduce((sum, c) => sum + (c.value || 0), 0);
+                reportText += `Valor Total: R$ ${totalValue.toFixed(2)}`;
+            } else if (type === 'clients') {
+                const clientsMap = new Map();
+                filteredCases.forEach(c => {
+                    clientsMap.set(c.client, (clientsMap.get(c.client) || 0) + 1);
+                });
+                clientsMap.forEach((count, client) => {
+                    reportText += `${client}: ${count} casos\n`;
+                });
+            }
+            
+            alert(reportText);
+            // Em produção, poderia gerar PDF ou CSV
+        }
+        
         // Configurar página de configurações
         function setupSettings() {
             document.getElementById('userNameInput').value = currentUser.name || '';
             document.getElementById('userEmail').value = currentUser.email || '';
             document.getElementById('userPhone').value = currentUser.phone || '';
+        }
+        
+        // Manipular atualização de perfil
+        function handleProfileUpdate(e) {
+            e.preventDefault();
+            const name = document.getElementById('userNameInput').value;
+            const email = document.getElementById('userEmail').value;
+            const phone = document.getElementById('userPhone').value;
+            
+            currentUser.name = name;
+            currentUser.email = email;
+            currentUser.phone = phone;
+            
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            if (userIndex !== -1) {
+                users[userIndex] = { ...currentUser };
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+            
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            document.getElementById('userName').textContent = name;
+            document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+            
+            alert('Perfil atualizado com sucesso!');
+        }
+        
+        // Manipular alteração de senha
+        function handlePasswordChange(e) {
+            e.preventDefault();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (currentPassword !== currentUser.password) {
+                alert('Senha atual incorreta!');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('As novas senhas não coincidem!');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                alert('A nova senha deve ter pelo menos 6 caracteres!');
+                return;
+            }
+            
+            currentUser.password = newPassword;
+            
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            if (userIndex !== -1) {
+                users[userIndex] = { ...currentUser };
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+            
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            alert('Senha alterada com sucesso!');
+            document.getElementById('passwordForm').reset();
         }
         
         // Abrir modal
@@ -1525,6 +1624,7 @@
         
         // Formatar data
         function formatDate(dateString) {
+            if (!dateString) return 'N/A';
             const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
             return new Date(dateString).toLocaleDateString('pt-BR', options);
         }
