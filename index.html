@@ -1194,7 +1194,7 @@
         }
         
         // Mostrar página específica
-        function showPage(pageName) {
+        function showPage(pageName, params = {}) {
             // Ocultar todas as páginas
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.add('d-none');
@@ -1209,7 +1209,7 @@
             } else if (pageName === 'cases') {
                 updateCasesTable();
             } else if (pageName === 'addCase') {
-                setupCaseForm();
+                setupCaseForm(params.caseId);
             } else if (pageName === 'clients') {
                 updateClientsTable();
             } else if (pageName === 'reports') {
@@ -1414,8 +1414,7 @@
         
         // Abrir formulário de edição
         function editCaseForm(caseId) {
-            setupCaseForm(caseId);
-            showPage('addCase');
+            showPage('addCase', {caseId: caseId});
         }
         
         // Excluir caso
