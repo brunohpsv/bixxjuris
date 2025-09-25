@@ -993,81 +993,94 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
-        import {
-            getAuth,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            onAuthStateChanged,
-            signOut
-        } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import {
-            getFirestore,
-            doc,
-            setDoc,
-            addDoc,
-            getDoc,
-            collection,
-            query,
-            where,
-            getDocs,
-            deleteDoc
-        } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    
-        const firebaseConfig = {
-            apiKey: "AIzaSyBPFI-8FJJ2ACpxZhYcjW3ol9CBJzT_hAA",
-            authDomain: "bixxjuris.firebaseapp.com",
-            projectId: "bixxjuris",
-            storageBucket: "bixxjuris.firebasestorage.app",
-            messagingSenderId: "560618621657",
-            appId: "1:560618621657:web:80aa9231e2b379473dccc8",
-            measurementId: "G-WKZS0ZCKHC"
-        };
-    
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-    
-        window.firebase = {
-            auth,
-            db,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            onAuthStateChanged,
-            signOut,
-            doc,
-            setDoc,
-            addDoc,
-            getDoc,
-            collection,
-            query,
-            where,
-            getDocs,
-            deleteDoc
-        };
-    </script>
-    <script>
-        // DOM Elements
-        const landingPage = document.getElementById('landingPage');
-        const loginPage = document.getElementById('loginPage');
-        const app = document.getElementById('app');
-        const loginForm = document.getElementById('loginForm');
-        const caseForm = document.getElementById('caseForm');
-        const clientForm = document.getElementById('clientForm');
-        const casesTableBody = document.getElementById('casesTable');
-        const recentCasesTableBody = document.getElementById('recentCasesTable');
-        const clientsTableBody = document.getElementById('clientsTable').querySelector('tbody');
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const pageTitleElement = document.getElementById('pageTitle');
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
+    import {
+        getAuth,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        onAuthStateChanged,
+        signOut,
+        GoogleAuthProvider,
+        signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import {
+        getFirestore,
+        doc,
+        setDoc,
+        addDoc,
+        getDoc,
+        collection,
+        query,
+        where,
+        getDocs,
+        deleteDoc,
+        updateDoc,
+        orderBy,
+        limit
+    } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        let currentUser = null;
+    const firebaseConfig = {
+        apiKey: "AIzaSyBPFI-8FJJ2ACpxZhYcjW3ol9CBJzT_hAA",
+        authDomain: "bixxjuris.firebaseapp.com",
+        projectId: "bixxjuris",
+        storageBucket: "bixxjuris.firebasestorage.app",
+        messagingSenderId: "560618621657",
+        appId: "1:560618621657:web:80aa9231e2b379473dccc8",
+        measurementId: "G-WKZS0ZCKHC"
+    };
 
-        // --- Gerenciamento de Páginas e Navegação ---
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const googleProvider = new GoogleAuthProvider();
 
-        function showPage(pageId) {
+    window.firebase = {
+        auth,
+        db,
+        googleProvider,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        signInWithPopup,
+        onAuthStateChanged,
+        signOut,
+        doc,
+        setDoc,
+        addDoc,
+        getDoc,
+        collection,
+        query,
+        where,
+        orderBy,
+        limit,
+        getDocs,
+        deleteDoc,
+        updateDoc
+    };
+</script>
+<script>
+    // DOM Elements
+    const landingPage = document.getElementById('landingPage');
+    const loginPage = document.getElementById('loginPage');
+    const app = document.getElementById('app');
+    const loginForm = document.getElementById('loginForm');
+    const caseForm = document.getElementById('caseForm');
+    const clientForm = document.getElementById('clientForm');
+    const casesTableBody = document.getElementById('casesTable');
+    const recentCasesTableBody = document.getElementById('recentCasesTable');
+    const clientsTableBody = document.getElementById('clientsTable').querySelector('tbody');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const reportContent = document.getElementById('reportContent');
+
+    let currentUser = null;
+    let allCases = [];
+
+    // --- Gerenciamento de Páginas e Navegação ---
+
+    function showPage(pageId) {
         document.querySelectorAll('.page').forEach(page => {
             page.classList.add('d-none');
         });
@@ -1076,7 +1089,10 @@
         document.querySelectorAll('.menu-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.querySelector(`.menu-item[data-page="${pageId}"]`).classList.add('active');
+        const menuItem = document.querySelector(`.menu-item[data-page="${pageId}"]`);
+        if (menuItem) {
+            menuItem.classList.add('active');
+        }
 
         // Atualiza o conteúdo dinâmico
         if (pageId === 'cases') {
@@ -1085,451 +1101,635 @@
             fetchClients();
         } else if (pageId === 'dashboard') {
             fetchDashboardData();
+        } else if (pageId === 'reports') {
+            generateReportPreview();
         }
     }
 
-        function showLoginPage() {
-    console.log('showLoginPage chamada'); // Para debug
-    landingPage.classList.add('d-none');
-    loginPage.classList.remove('d-none');
-    app.classList.add('d-none');
+    function showLoginPage() {
+        landingPage.classList.add('d-none');
+        loginPage.classList.remove('d-none');
+        app.classList.add('d-none');
+    }
+
+    function showApp() {
+        landingPage.classList.add('d-none');
+        loginPage.classList.add('d-none');
+        app.classList.remove('d-none');
+    }
+
+    function showRegisterForm() {
+        document.getElementById('toggleLoginText').innerHTML = 'Já tem uma conta? <a href="#" onclick="showLoginForm()">Faça login</a>';
+        document.querySelector('#loginForm button[type="submit"]').innerText = 'Cadastrar';
+    }
     
-    // Verifica se as classes foram aplicadas corretamente
-    console.log('Landing page hidden:', landingPage.classList.contains('d-none'));
-    console.log('Login page visible:', !loginPage.classList.contains('d-none'));
-}
+    function showLoginForm() {
+        document.getElementById('toggleLoginText').innerHTML = 'Não tem uma conta? <a href="#" onclick="showRegisterForm()">Cadastre-se</a>';
+        document.querySelector('#loginForm button[type="submit"]').innerText = 'Entrar';
+    }
 
-        function showApp() {
-    landingPage.classList.add('d-none'); // Adicione esta linha
-    loginPage.classList.add('d-none');
-    app.classList.remove('d-none');
-}
+    // --- Modals ---
+    window.showModal = (modalId) => {
+        document.getElementById(modalId).style.display = 'flex';
+    }
 
-        function showRegisterForm() {
-            document.getElementById('toggleLoginText').innerHTML = 'Já tem uma conta? <a href="#" onclick="showLoginForm()">Faça login</a>';
-            document.getElementById('saveCaseBtn').innerText = 'Cadastrar';
-        }
-        
-        function showLoginForm() {
-            document.getElementById('toggleLoginText').innerHTML = 'Não tem uma conta? <a href="#" onclick="showRegisterForm()">Cadastre-se</a>';
-            document.getElementById('saveCaseBtn').innerText = 'Entrar';
-        }
-
-        // --- Modals ---
-        window.showModal = (modalId) => {
-            document.getElementById(modalId).style.display = 'flex';
-        }
-
-        window.closeModal = (modalId) => {
-            document.getElementById(modalId).style.display = 'none';
+    window.closeModal = (modalId) => {
+        document.getElementById(modalId).style.display = 'none';
+        if (modalId === 'addClientModal') {
             document.getElementById('clientForm').reset();
             document.getElementById('clientId').value = '';
             document.getElementById('clientModalTitle').innerText = 'Adicionar Cliente';
         }
+    }
 
-        // --- Autenticação Firebase ---
+    // --- Autenticação Firebase ---
 
-        window.logout = async () => {
-            try {
-                await firebase.signOut(firebase.auth);
-            } catch (error) {
-                console.error("Erro ao fazer logout:", error);
+    window.loginWithGoogle = async () => {
+        try {
+            const result = await firebase.signInWithPopup(firebase.auth, firebase.googleProvider);
+            currentUser = result.user;
+        } catch (error) {
+            console.error("Erro ao fazer login com Google:", error);
+            alert("Erro ao fazer login com Google: " + error.message);
+        }
+    };
+
+    window.loginWithFacebook = () => {
+        alert("Login com Facebook será implementado em breve!");
+    };
+
+    window.logout = async () => {
+        try {
+            await firebase.signOut(firebase.auth);
+            currentUser = null;
+            showLoginPage();
+        } catch (error) {
+            console.error("Erro ao fazer logout:", error);
+        }
+    };
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const isRegistering = document.getElementById('toggleLoginText').innerText.includes('Faça login');
+
+        try {
+            if (isRegistering) {
+                const userCredential = await firebase.createUserWithEmailAndPassword(firebase.auth, email, password);
+                currentUser = userCredential.user;
+                // Salvar dados do usuário no Firestore
+                await firebase.setDoc(firebase.doc(firebase.db, "users", currentUser.uid), {
+                    email: currentUser.email,
+                    name: currentUser.email.split('@')[0],
+                    createdAt: new Date()
+                });
+                alert("Cadastro realizado com sucesso!");
+            } else {
+                const userCredential = await firebase.signInWithEmailAndPassword(firebase.auth, email, password);
+                currentUser = userCredential.user;
             }
+        } catch (error) {
+            console.error("Erro de autenticação:", error.message);
+            alert("Erro de autenticação: " + error.message);
+        }
+    });
+
+    // Observa o estado da autenticação
+    firebase.onAuthStateChanged(firebase.auth, (user) => {
+        if (user) {
+            currentUser = user;
+            showApp();
+            document.getElementById('userName').innerText = user.email.split('@')[0];
+            document.getElementById('userAvatar').innerText = user.email.charAt(0).toUpperCase();
+            
+            // Atualizar perfil
+            document.getElementById('profileName').value = user.email.split('@')[0];
+            document.getElementById('profileEmail').value = user.email;
+            
+            showPage('dashboard');
+        } else {
+            currentUser = null;
+            showLoginPage();
+        }
+    });
+
+    // --- Gerenciamento de Casos ---
+
+    caseForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const caseId = document.getElementById('caseId').value;
+        const caseTitle = document.getElementById('caseTitle').value;
+        const caseDescription = document.getElementById('caseDescription').value;
+        const caseClient = document.getElementById('caseClient').value;
+        const caseValue = parseFloat(document.getElementById('caseValue').value) || 0;
+        const caseStatus = document.getElementById('caseStatus').value;
+
+        const caseData = {
+            userId: currentUser.uid,
+            title: caseTitle,
+            description: caseDescription,
+            client: caseClient,
+            value: caseValue,
+            status: caseStatus,
+            updatedAt: new Date()
         };
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const isRegistering = document.getElementById('toggleLoginText').innerText.includes('Faça login');
-
-            try {
-                if (isRegistering) {
-                    const userCredential = await firebase.createUserWithEmailAndPassword(firebase.auth, email, password);
-                    currentUser = userCredential.user;
-                    // Salvar dados do usuário no Firestore
-                    await firebase.setDoc(firebase.doc(firebase.db, "users", currentUser.uid), {
-                        email: currentUser.email,
-                        createdAt: new Date()
-                    });
-                } else {
-                    const userCredential = await firebase.signInWithEmailAndPassword(firebase.auth, email, password);
-                    currentUser = userCredential.user;
-                }
-            } catch (error) {
-                console.error("Erro de autenticação:", error.message);
-                alert("Erro de autenticação: " + error.message);
-            }
-        });
-
-        // Observa o estado da autenticação
-        firebase.onAuthStateChanged(firebase.auth, (user) => {
-            if (user) {
-                currentUser = user;
-                showApp();
-                document.getElementById('userName').innerText = user.email.split('@')[0];
-                document.getElementById('userAvatar').innerText = user.email.charAt(0).toUpperCase();
-                showPage('dashboard');
-            } else {
-                currentUser = null;
-                loginPage.classList.remove('d-none');
-                app.classList.add('d-none');
-            }
-        });
-
-        // --- Gerenciamento de Casos ---
-
-        caseForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const caseId = document.getElementById('caseId').value;
-            const caseTitle = document.getElementById('caseTitle').value;
-            const caseDescription = document.getElementById('caseDescription').value;
-            const caseClient = document.getElementById('caseClient').value;
-            const caseValue = parseFloat(document.getElementById('caseValue').value) || 0;
-            const caseStatus = document.getElementById('caseStatus').value;
-
-            const caseData = {
-                userId: currentUser.uid,
-                title: caseTitle,
-                description: caseDescription,
-                client: caseClient,
-                value: caseValue,
-                status: caseStatus,
-                createdAt: new Date().toISOString()
-            };
-
-            try {
-                if (caseId) {
-                    // Editar caso existente
-                    await firebase.setDoc(firebase.doc(firebase.db, "cases", caseId), caseData);
-                    alert("Caso atualizado com sucesso!");
-                } else {
-                    // Adicionar novo caso
-                    await firebase.addDoc(firebase.collection(firebase.db, "cases"), caseData);
-                    alert("Caso adicionado com sucesso!");
-                }
-                caseForm.reset();
-                showPage('cases'); // Volta para a lista de casos
-            } catch (error) {
-                console.error("Erro ao salvar o caso:", error);
-                alert("Erro ao salvar o caso.");
-            }
-        });
-
-        async function fetchCases() {
-            if (!currentUser) return;
-            casesTableBody.innerHTML = '';
-            try {
-                const q = firebase.query(firebase.collection(firebase.db, "cases"), firebase.where("userId", "==", currentUser.uid));
-                const querySnapshot = await firebase.getDocs(q);
-                let cases = [];
-                querySnapshot.forEach((doc) => {
-                    cases.push({ id: doc.id, ...doc.data() });
-                });
-                renderCases(cases);
-            } catch (error) {
-                console.error("Erro ao buscar casos:", error);
-            }
+        // Se for um novo caso, adiciona createdAt
+        if (!caseId) {
+            caseData.createdAt = new Date();
         }
 
-        function renderCases(cases) {
-            casesTableBody.innerHTML = '';
-            cases.forEach(caseItem => {
-                const statusMap = {
-                    'pending': { text: 'Pendente', class: 'status-pending' },
-                    'in-progress': { text: 'Em andamento', class: 'status-in-progress' },
-                    'resolved': { text: 'Resolvido', class: 'status-resolved' },
-                    'agreed': { text: 'Acordado', class: 'status-agreed' }
-                };
-                const statusInfo = statusMap[caseItem.status] || { text: caseItem.status, class: '' };
-                
+        try {
+            if (caseId) {
+                // Editar caso existente
+                await firebase.updateDoc(firebase.doc(firebase.db, "cases", caseId), caseData);
+                alert("Caso atualizado com sucesso!");
+            } else {
+                // Adicionar novo caso
+                await firebase.addDoc(firebase.collection(firebase.db, "cases"), caseData);
+                alert("Caso adicionado com sucesso!");
+            }
+            caseForm.reset();
+            document.getElementById('caseId').value = '';
+            document.getElementById('caseFormTitle').innerText = 'Novo Caso';
+            showPage('cases');
+        } catch (error) {
+            console.error("Erro ao salvar o caso:", error);
+            alert("Erro ao salvar o caso: " + error.message);
+        }
+    });
+
+    async function fetchCases() {
+        if (!currentUser) return;
+        casesTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Carregando...</td></tr>';
+        try {
+            const q = firebase.query(
+                firebase.collection(firebase.db, "cases"), 
+                firebase.where("userId", "==", currentUser.uid),
+                firebase.orderBy("updatedAt", "desc")
+            );
+            const querySnapshot = await firebase.getDocs(q);
+            allCases = [];
+            querySnapshot.forEach((doc) => {
+                allCases.push({ id: doc.id, ...doc.data() });
+            });
+            renderCases(allCases);
+        } catch (error) {
+            console.error("Erro ao buscar casos:", error);
+            casesTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Erro ao carregar casos</td></tr>';
+        }
+    }
+
+    function renderCases(cases) {
+        casesTableBody.innerHTML = '';
+        if (cases.length === 0) {
+            casesTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum caso encontrado</td></tr>';
+            return;
+        }
+        
+        cases.forEach(caseItem => {
+            const statusMap = {
+                'pending': { text: 'Pendente', class: 'status-pending' },
+                'in-progress': { text: 'Em andamento', class: 'status-in-progress' },
+                'resolved': { text: 'Resolvido', class: 'status-resolved' },
+                'agreed': { text: 'Acordado', class: 'status-agreed' }
+            };
+            const statusInfo = statusMap[caseItem.status] || { text: caseItem.status, class: '' };
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${caseItem.title}</td>
+                <td>${caseItem.client}</td>
+                <td>R$ ${caseItem.value.toFixed(2)}</td>
+                <td><span class="status-badge ${statusInfo.class}">${statusInfo.text}</span></td>
+                <td>${new Date(caseItem.createdAt).toLocaleDateString('pt-BR')}</td>
+                <td class="action-buttons">
+                    <button class="btn btn-sm btn-outline" onclick="editCase('${caseItem.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCase('${caseItem.id}')">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            casesTableBody.appendChild(row);
+        });
+    }
+
+    window.editCase = async (id) => {
+        try {
+            const docRef = firebase.doc(firebase.db, "cases", id);
+            const docSnap = await firebase.getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('caseId').value = id;
+                document.getElementById('caseTitle').value = data.title;
+                document.getElementById('caseDescription').value = data.description;
+                document.getElementById('caseClient').value = data.client;
+                document.getElementById('caseValue').value = data.value;
+                document.getElementById('caseStatus').value = data.status;
+                document.getElementById('caseFormTitle').innerText = 'Editar Caso';
+                showPage('addCase');
+            }
+        } catch (error) {
+            console.error("Erro ao buscar caso para edição:", error);
+            alert("Erro ao carregar caso para edição.");
+        }
+    }
+
+    window.deleteCase = async (id) => {
+        if (confirm("Tem certeza que deseja deletar este caso?")) {
+            try {
+                await firebase.deleteDoc(firebase.doc(firebase.db, "cases", id));
+                alert("Caso deletado com sucesso!");
+                fetchCases();
+                fetchDashboardData();
+            } catch (error) {
+                console.error("Erro ao deletar o caso:", error);
+                alert("Erro ao deletar o caso.");
+            }
+        }
+    }
+
+    window.filterCases = () => {
+        const searchText = document.getElementById('caseSearch').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+        
+        const filteredCases = allCases.filter(caseItem => {
+            const matchesSearch = caseItem.title.toLowerCase().includes(searchText) || 
+                                caseItem.client.toLowerCase().includes(searchText);
+            const matchesStatus = statusFilter === '' || caseItem.status === statusFilter;
+            
+            return matchesSearch && matchesStatus;
+        });
+        
+        renderCases(filteredCases);
+    }
+
+    // --- Gerenciamento de Clientes ---
+    clientForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const clientId = document.getElementById('clientId').value;
+        const clientName = document.getElementById('clientName').value;
+        const clientEmail = document.getElementById('clientEmail').value;
+        const clientPhone = document.getElementById('clientPhone').value;
+
+        const clientData = {
+            userId: currentUser.uid,
+            name: clientName,
+            email: clientEmail,
+            phone: clientPhone,
+            updatedAt: new Date()
+        };
+
+        if (!clientId) {
+            clientData.createdAt = new Date();
+        }
+
+        try {
+            if (clientId) {
+                await firebase.updateDoc(firebase.doc(firebase.db, "clients", clientId), clientData);
+                alert("Cliente atualizado com sucesso!");
+            } else {
+                await firebase.addDoc(firebase.collection(firebase.db, "clients"), clientData);
+                alert("Cliente adicionado com sucesso!");
+            }
+            closeModal('addClientModal');
+            fetchClients();
+        } catch (error) {
+            console.error("Erro ao salvar cliente:", error);
+            alert("Erro ao salvar cliente: " + error.message);
+        }
+    });
+
+    async function fetchClients() {
+        if (!currentUser) return;
+        clientsTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Carregando...</td></tr>';
+        try {
+            const q = firebase.query(
+                firebase.collection(firebase.db, "clients"), 
+                firebase.where("userId", "==", currentUser.uid),
+                firebase.orderBy("updatedAt", "desc")
+            );
+            const querySnapshot = await firebase.getDocs(q);
+            clientsTableBody.innerHTML = '';
+            querySnapshot.forEach((doc) => {
+                const client = doc.data();
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${caseItem.title}</td>
-                    <td>${caseItem.client}</td>
-                    <td>R$ ${caseItem.value.toFixed(2)}</td>
-                    <td><span class="status-badge ${statusInfo.class}">${statusInfo.text}</span></td>
-                    <td>${new Date(caseItem.createdAt).toLocaleDateString()}</td>
+                    <td>${client.name}</td>
+                    <td>${client.email}</td>
+                    <td>${client.phone || '-'}</td>
                     <td class="action-buttons">
-                        <button class="btn btn-sm btn-outline" onclick="editCase('${caseItem.id}')">
+                        <button class="btn btn-sm btn-outline" onclick="editClient('${doc.id}')">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteCase('${caseItem.id}')">
+                        <button class="btn btn-sm btn-danger" onclick="deleteClient('${doc.id}')">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
                 `;
-                casesTableBody.appendChild(row);
+                clientsTableBody.appendChild(row);
             });
-        }
-
-        window.editCase = async (id) => {
-            try {
-                const docRef = firebase.doc(firebase.db, "cases", id);
-                const docSnap = await firebase.getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('caseId').value = id;
-                    document.getElementById('caseTitle').value = data.title;
-                    document.getElementById('caseDescription').value = data.description;
-                    document.getElementById('caseClient').value = data.client;
-                    document.getElementById('caseValue').value = data.value;
-                    document.getElementById('caseStatus').value = data.status;
-                    document.getElementById('caseFormTitle').innerText = 'Editar Caso';
-                    showPage('addCase');
-                }
-            } catch (error) {
-                console.error("Erro ao buscar caso para edição:", error);
-            }
-        }
-
-        window.deleteCase = async (id) => {
-            if (confirm("Tem certeza que deseja deletar este caso?")) {
-                try {
-                    await firebase.deleteDoc(firebase.doc(firebase.db, "cases", id));
-                    alert("Caso deletado com sucesso!");
-                    fetchCases();
-                } catch (error) {
-                    console.error("Erro ao deletar o caso:", error);
-                    alert("Erro ao deletar o caso.");
-                }
-            }
-        }
-
-        window.filterCases = () => {
-            const searchText = document.getElementById('caseSearch').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
             
-            const rows = casesTableBody.querySelectorAll('tr');
-            rows.forEach(row => {
-                const title = row.cells[0].innerText.toLowerCase();
-                const client = row.cells[1].innerText.toLowerCase();
-                const status = row.cells[3].querySelector('.status-badge').innerText.toLowerCase();
-                
-                const matchesSearch = title.includes(searchText) || client.includes(searchText);
-                const matchesStatus = statusFilter === '' || status === statusFilter.toLowerCase();
-                
-                if (matchesSearch && matchesStatus) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+            if (querySnapshot.empty) {
+                clientsTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum cliente cadastrado</td></tr>';
+            }
+        } catch (error) {
+            console.error("Erro ao buscar clientes:", error);
+            clientsTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Erro ao carregar clientes</td></tr>';
         }
+    }
 
-        // --- Gerenciamento de Clientes ---
-        clientForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const clientId = document.getElementById('clientId').value;
-            const clientName = document.getElementById('clientName').value;
-            const clientEmail = document.getElementById('clientEmail').value;
-            const clientPhone = document.getElementById('clientPhone').value;
+    window.editClient = async (id) => {
+        try {
+            const docRef = firebase.doc(firebase.db, "clients", id);
+            const docSnap = await firebase.getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('clientId').value = id;
+                document.getElementById('clientName').value = data.name;
+                document.getElementById('clientEmail').value = data.email;
+                document.getElementById('clientPhone').value = data.phone || '';
+                document.getElementById('clientModalTitle').innerText = 'Editar Cliente';
+                showModal('addClientModal');
+            }
+        } catch (error) {
+            console.error("Erro ao buscar cliente para edição:", error);
+            alert("Erro ao carregar cliente para edição.");
+        }
+    }
 
-            const clientData = {
-                userId: currentUser.uid,
-                name: clientName,
-                email: clientEmail,
-                phone: clientPhone
-            };
-
+    window.deleteClient = async (id) => {
+        if (confirm("Tem certeza que deseja deletar este cliente?")) {
             try {
-                if (clientId) {
-                    await firebase.setDoc(firebase.doc(firebase.db, "clients", clientId), clientData);
-                    alert("Cliente atualizado com sucesso!");
-                } else {
-                    await firebase.addDoc(firebase.collection(firebase.db, "clients"), clientData);
-                    alert("Cliente adicionado com sucesso!");
-                }
-                closeModal('addClientModal');
+                await firebase.deleteDoc(firebase.doc(firebase.db, "clients", id));
+                alert("Cliente deletado com sucesso!");
                 fetchClients();
             } catch (error) {
-                console.error("Erro ao salvar cliente:", error);
-                alert("Erro ao salvar cliente.");
-            }
-        });
-
-        async function fetchClients() {
-            if (!currentUser) return;
-            clientsTableBody.innerHTML = '';
-            try {
-                const q = firebase.query(firebase.collection(firebase.db, "clients"), firebase.where("userId", "==", currentUser.uid));
-                const querySnapshot = await firebase.getDocs(q);
-                querySnapshot.forEach((doc) => {
-                    const client = doc.data();
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${client.name}</td>
-                        <td>${client.email}</td>
-                        <td>${client.phone || '-'}</td>
-                        <td class="action-buttons">
-                            <button class="btn btn-sm btn-outline" onclick="editClient('${doc.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteClient('${doc.id}')">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </td>
-                    `;
-                    clientsTableBody.appendChild(row);
-                });
-            } catch (error) {
-                console.error("Erro ao buscar clientes:", error);
+                console.error("Erro ao deletar cliente:", error);
+                alert("Erro ao deletar cliente.");
             }
         }
+    }
 
-        window.editClient = async (id) => {
-            try {
-                const docRef = firebase.doc(firebase.db, "clients", id);
-                const docSnap = await firebase.getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('clientId').value = id;
-                    document.getElementById('clientName').value = data.name;
-                    document.getElementById('clientEmail').value = data.email;
-                    document.getElementById('clientPhone').value = data.phone;
-                    document.getElementById('clientModalTitle').innerText = 'Editar Cliente';
-                    showModal('addClientModal');
-                }
-            } catch (error) {
-                console.error("Erro ao buscar cliente para edição:", error);
-            }
-        }
-
-        window.deleteClient = async (id) => {
-            if (confirm("Tem certeza que deseja deletar este cliente?")) {
-                try {
-                    await firebase.deleteDoc(firebase.doc(firebase.db, "clients", id));
-                    alert("Cliente deletado com sucesso!");
-                    fetchClients();
-                } catch (error) {
-                    console.error("Erro ao deletar cliente:", error);
-                    alert("Erro ao deletar cliente.");
-                }
-            }
-        }
-
-        // --- Dashboard e Relatórios ---
-        async function fetchDashboardData() {
-            if (!currentUser) return;
-            try {
-                const q = firebase.query(firebase.collection(firebase.db, "cases"), firebase.where("userId", "==", currentUser.uid));
-                const querySnapshot = await firebase.getDocs(q);
-                
-                let totalCases = 0;
-                let resolvedCases = 0;
-                let pendingCases = 0;
-                let totalValue = 0;
-                let recentCases = [];
-
-                querySnapshot.forEach((doc) => {
-                    const caseData = doc.data();
-                    totalCases++;
-                    totalValue += caseData.value || 0;
-                    if (caseData.status === 'resolved' || caseData.status === 'agreed') {
-                        resolvedCases++;
-                    } else {
-                        pendingCases++;
-                    }
-                    recentCases.push(caseData);
-                });
-
-                document.getElementById('totalCases').innerText = totalCases;
-                document.getElementById('resolvedCases').innerText = resolvedCases;
-                document.getElementById('pendingCases').innerText = pendingCases;
-                document.getElementById('totalValue').innerText = `R$ ${totalValue.toFixed(2)}`;
-                
-                // Ordenar por data de criação e pegar os 5 mais recentes
-                recentCases.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                const recentCasesFormatted = recentCases.slice(0, 5);
-                renderRecentCases(recentCasesFormatted);
-
-            } catch (error) {
-                console.error("Erro ao buscar dados do dashboard:", error);
-            }
-        }
-
-        function renderRecentCases(cases) {
-            recentCasesTableBody.innerHTML = '';
-            cases.forEach(caseItem => {
-                const statusMap = {
-                    'pending': { text: 'Pendente', class: 'status-pending' },
-                    'in-progress': { text: 'Em andamento', class: 'status-in-progress' },
-                    'resolved': { text: 'Resolvido', class: 'status-resolved' },
-                    'agreed': { text: 'Acordado', class: 'status-agreed' }
-                };
-                const statusInfo = statusMap[caseItem.status] || { text: caseItem.status, class: '' };
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${caseItem.title}</td>
-                    <td>${caseItem.client}</td>
-                    <td>R$ ${caseItem.value.toFixed(2)}</td>
-                    <td><span class="status-badge ${statusInfo.class}">${statusInfo.text}</span></td>
-                    <td>${new Date(caseItem.createdAt).toLocaleDateString()}</td>
-                `;
-                recentCasesTableBody.appendChild(row);
-            });
-        }
-
-        window.generateReport = async () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            const table = document.getElementById('casesTable');
-            const data = [];
+    // --- Dashboard e Relatórios ---
+    async function fetchDashboardData() {
+        if (!currentUser) return;
+        try {
+            const q = firebase.query(
+                firebase.collection(firebase.db, "cases"), 
+                firebase.where("userId", "==", currentUser.uid)
+            );
+            const querySnapshot = await firebase.getDocs(q);
             
-            // Adiciona cabeçalho
-            data.push(["Título", "Cliente", "Valor (R$)", "Status", "Data de Criação"]);
+            let totalCases = 0;
+            let resolvedCases = 0;
+            let pendingCases = 0;
+            let inProgressCases = 0;
+            let agreedCases = 0;
+            let totalValue = 0;
+            let recentCases = [];
 
-            // Adiciona dados da tabela
-            const rows = table.querySelectorAll('tr');
-            rows.forEach(row => {
-                if(row.style.display !== 'none' && row.cells.length > 1) {
-                    const rowData = [
-                        row.cells[0].innerText,
-                        row.cells[1].innerText,
-                        row.cells[2].innerText,
-                        row.cells[3].innerText,
-                        row.cells[4].innerText
-                    ];
-                    data.push(rowData);
+            querySnapshot.forEach((doc) => {
+                const caseData = doc.data();
+                totalCases++;
+                totalValue += caseData.value || 0;
+                
+                switch(caseData.status) {
+                    case 'resolved':
+                        resolvedCases++;
+                        break;
+                    case 'in-progress':
+                        inProgressCases++;
+                        break;
+                    case 'agreed':
+                        agreedCases++;
+                        break;
+                    default:
+                        pendingCases++;
                 }
+                
+                recentCases.push({ id: doc.id, ...caseData });
             });
 
-            doc.text("Relatório de Casos Jurídicos", 14, 20);
-            doc.autoTable({
-                startY: 30,
-                head: [data[0]],
-                body: data.slice(1)
-            });
+            document.getElementById('totalCases').innerText = totalCases;
+            document.getElementById('resolvedCases').innerText = resolvedCases;
+            document.getElementById('pendingCases').innerText = pendingCases;
+            document.getElementById('totalValue').innerText = `R$ ${totalValue.toFixed(2)}`;
+            
+            // Ordenar por data de criação e pegar os 5 mais recentes
+            recentCases.sort((a, b) => new Date(b.createdAt || b.updatedAt) - new Date(a.createdAt || a.updatedAt));
+            const recentCasesFormatted = recentCases.slice(0, 5);
+            renderRecentCases(recentCasesFormatted);
 
-            doc.save("relatorio-bixxjuris.pdf");
+        } catch (error) {
+            console.error("Erro ao buscar dados do dashboard:", error);
+        }
+    }
+
+    function renderRecentCases(cases) {
+        recentCasesTableBody.innerHTML = '';
+        if (cases.length === 0) {
+            recentCasesTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum caso cadastrado</td></tr>';
+            return;
+        }
+        
+        cases.forEach(caseItem => {
+            const statusMap = {
+                'pending': { text: 'Pendente', class: 'status-pending' },
+                'in-progress': { text: 'Em andamento', class: 'status-in-progress' },
+                'resolved': { text: 'Resolvido', class: 'status-resolved' },
+                'agreed': { text: 'Acordado', class: 'status-agreed' }
+            };
+            const statusInfo = statusMap[caseItem.status] || { text: caseItem.status, class: '' };
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${caseItem.title}</td>
+                <td>${caseItem.client}</td>
+                <td>R$ ${caseItem.value.toFixed(2)}</td>
+                <td><span class="status-badge ${statusInfo.class}">${statusInfo.text}</span></td>
+                <td>${new Date(caseItem.createdAt || caseItem.updatedAt).toLocaleDateString('pt-BR')}</td>
+            `;
+            recentCasesTableBody.appendChild(row);
+        });
+    }
+
+    function generateReportPreview() {
+        if (!currentUser || allCases.length === 0) {
+            reportContent.innerHTML = '<p>Nenhum dado disponível para gerar relatório.</p>';
+            return;
         }
 
-        // --- UI Interactions ---
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                showPage(e.currentTarget.dataset.page);
-                if (window.innerWidth <= 576) {
-                    sidebar.classList.remove('mobile-open');
-                }
-            });
+        let html = `
+            <h3>Relatório de Casos - ${new Date().toLocaleDateString('pt-BR')}</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                <div style="background: #f0f9ff; padding: 1rem; border-radius: 8px;">
+                    <h4>Total de Casos</h4>
+                    <p style="font-size: 2rem; font-weight: bold; color: #1e40af;">${allCases.length}</p>
+                </div>
+                <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px;">
+                    <h4>Valor Total</h4>
+                    <p style="font-size: 2rem; font-weight: bold; color: #15803d;">R$ ${allCases.reduce((sum, caseItem) => sum + (caseItem.value || 0), 0).toFixed(2)}</p>
+                </div>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                <thead>
+                    <tr style="background: #f8fafc;">
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Título</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Cliente</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Valor</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Status</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        allCases.forEach(caseItem => {
+            const statusMap = {
+                'pending': { text: 'Pendente', class: 'status-pending' },
+                'in-progress': { text: 'Em andamento', class: 'status-in-progress' },
+                'resolved': { text: 'Resolvido', class: 'status-resolved' },
+                'agreed': { text: 'Acordado', class: 'status-agreed' }
+            };
+            const statusInfo = statusMap[caseItem.status] || { text: caseItem.status, class: '' };
+
+            html += `
+                <tr>
+                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${caseItem.title}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${caseItem.client}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">R$ ${caseItem.value.toFixed(2)}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+                        <span class="status-badge ${statusInfo.class}">${statusInfo.text}</span>
+                    </td>
+                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+                        ${new Date(caseItem.createdAt || caseItem.updatedAt).toLocaleDateString('pt-BR')}
+                    </td>
+                </tr>
+            `;
         });
 
-        document.getElementById('toggleSidebar').addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            document.getElementById('toggleSidebar').querySelector('i').classList.toggle('fa-chevron-right');
-            document.getElementById('toggleSidebar').querySelector('i').classList.toggle('fa-chevron-left');
+        html += `</tbody></table>`;
+        reportContent.innerHTML = html;
+    }
+
+    window.generateReport = async () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Título
+        doc.setFontSize(20);
+        doc.text('Relatório de Casos Jurídicos', 105, 15, { align: 'center' });
+        
+        // Data do relatório
+        doc.setFontSize(12);
+        doc.text(`Data do relatório: ${new Date().toLocaleDateString('pt-BR')}`, 14, 25);
+
+        // Estatísticas
+        const totalCases = allCases.length;
+        const totalValue = allCases.reduce((sum, caseItem) => sum + (caseItem.value || 0), 0);
+        
+        doc.text(`Total de casos: ${totalCases}`, 14, 35);
+        doc.text(`Valor total: R$ ${totalValue.toFixed(2)}`, 14, 42);
+
+        // Tabela
+        let yPosition = 55;
+        
+        // Cabeçalho da tabela
+        doc.setFillColor(248, 250, 252);
+        doc.rect(14, yPosition, 182, 10, 'F');
+        doc.setFontSize(10);
+        doc.text('Título', 16, yPosition + 7);
+        doc.text('Cliente', 70, yPosition + 7);
+        doc.text('Valor', 120, yPosition + 7);
+        doc.text('Status', 140, yPosition + 7);
+        doc.text('Data', 170, yPosition + 7);
+        
+        yPosition += 10;
+
+        // Dados da tabela
+        allCases.forEach((caseItem, index) => {
+            if (yPosition > 270) { // Nova página se necessário
+                doc.addPage();
+                yPosition = 20;
+            }
+            
+            doc.text(caseItem.title.substring(0, 30), 16, yPosition + 7);
+            doc.text(caseItem.client.substring(0, 20), 70, yPosition + 7);
+            doc.text(`R$ ${caseItem.value.toFixed(2)}`, 120, yPosition + 7);
+            
+            const statusMap = {
+                'pending': 'Pendente',
+                'in-progress': 'Em and.',
+                'resolved': 'Resolvido',
+                'agreed': 'Acordado'
+            };
+            doc.text(statusMap[caseItem.status] || caseItem.status, 140, yPosition + 7);
+            
+            doc.text(new Date(caseItem.createdAt || caseItem.updatedAt).toLocaleDateString('pt-BR'), 170, yPosition + 7);
+            
+            yPosition += 10;
         });
 
-        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+        doc.save(`relatorio-bixxjuris-${new Date().toISOString().split('T')[0]}.pdf`);
+    }
+
+    // --- UI Interactions ---
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            showPage(e.currentTarget.dataset.page);
+            if (window.innerWidth <= 576) {
+                sidebar.classList.remove('mobile-open');
+            }
+        });
+    });
+
+    document.getElementById('toggleSidebar').addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        const icon = document.getElementById('toggleSidebar').querySelector('i');
+        icon.classList.toggle('fa-chevron-right');
+        icon.classList.toggle('fa-chevron-left');
+    });
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
             sidebar.classList.add('mobile-open');
         });
+    }
 
-        window.scrollToBenefits = () => {
-            document.getElementById('benefits').scrollIntoView({ behavior: 'smooth' });
+    // Fechar sidebar ao clicar fora (mobile)
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 576 && 
+            !sidebar.contains(e.target) && 
+            !mobileMenuBtn.contains(e.target) &&
+            sidebar.classList.contains('mobile-open')) {
+            sidebar.classList.remove('mobile-open');
         }
-    </script>
+    });
+
+    window.scrollToBenefits = () => {
+        document.getElementById('benefits').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+        // Verificar se estamos em dispositivo móvel
+        if (window.innerWidth <= 576) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+            mobileMenuBtn.classList.remove('d-none');
+        }
+        
+        // Adicionar listener para o campo de busca
+        const caseSearch = document.getElementById('caseSearch');
+        if (caseSearch) {
+            caseSearch.addEventListener('input', filterCases);
+        }
+    });
+</script>
 </body>
 </html>
