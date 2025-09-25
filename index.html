@@ -31,6 +31,7 @@
             background-color: var(--light);
             color: var(--dark);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         /* Layout principal */
@@ -44,7 +45,7 @@
             width: 250px;
             background-color: var(--primary);
             color: white;
-            transition: all 0.3s ease;
+            transition: width 0.3s ease, transform 0.3s ease;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -53,6 +54,10 @@
 
         .sidebar.collapsed {
             width: 70px;
+        }
+
+        .sidebar.mobile-open {
+            transform: translateX(0);
         }
 
         .sidebar-header {
@@ -215,6 +220,7 @@
             overflow: hidden;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
+            overflow-x: auto;
         }
 
         table {
@@ -406,10 +412,11 @@
 
         /* Login */
         .login-container {
-            display: flex;
-            min-height: 100vh;
+            display: none;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
             background: linear-gradient(135deg, var(--primary) 0%, #3B82F6 100%);
         }
 
@@ -526,7 +533,7 @@
             }
             
             .mobile-menu-btn {
-                display: block;
+                display: block !important;
             }
         }
 
@@ -549,11 +556,127 @@
         .fade-in {
             animation: fadeIn 0.3s ease forwards;
         }
+
+        /* Estilos para a landing page */
+        #landingPage {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        #landingPage footer {
+            margin-top: auto;
+        }
+
+        /* Ajustes para modais */
+        .modal-content {
+            max-width: 500px;
+            width: 90%;
+        }
+
+        /* Responsividade para landing page */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 10px;
+            }
+            
+            header div {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Tela de Login -->
-    <div id="loginPage" class="login-container">
+    <div id="landingPage">
+        <header style="background: linear-gradient(135deg, var(--primary) 0%, #3B82F6 100%); color: white; padding: 1rem 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <h1 style="font-size: 2rem;">BIXXJURIS</h1>
+                    <p style="opacity: 0.9;">Gestão Simplificada de Casos Jurídicos</p>
+                </div>
+                <button class="btn btn-accent" onclick="showLoginPage()">Acessar Plataforma</button>
+            </div>
+        </header>
+
+        <section style="padding: 4rem 2rem; text-align: center; background: white;">
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h2 style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;">
+                    Revolucione sua Gestão Jurídica
+                </h2>
+                <p style="font-size: 1.2rem; color: var(--neutral); margin-bottom: 2rem;">
+                    A plataforma completa para advogados e escritórios de advocacia. 
+                    Gerencie casos, clientes e prazos em um só lugar.
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="showLoginPage()">Começar Agora</button>
+                    <button class="btn btn-outline" onclick="scrollToBenefits()">Ver Benefícios</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="benefits" style="padding: 4rem 2rem; background: #f8fafc;">
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <h2 style="text-align: center; font-size: 2.5rem; color: var(--primary); margin-bottom: 3rem;">
+                    Plano Único - R$ 84,50/mês
+                </h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <div style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;">📁</div>
+                        <h3 style="color: var(--primary); margin-bottom: 1rem;">Gestão de Casos</h3>
+                        <p>Organize todos os seus casos jurídicos em um só lugar com status personalizáveis.</p>
+                    </div>
+                    
+                    <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <div style="font-size: 3rem; color: var(--secondary); margin-bottom: 1rem;">👥</div>
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Controle de Clientes</h3>
+                        <p>Cadastre e gerencie todos os seus clientes com informações completas.</p>
+                    </div>
+                    
+                    <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <div style="font-size: 3rem; color: var(--accent); margin-bottom: 1rem;">📊</div>
+                        <h3 style="color: var(--accent); margin-bottom: 1rem;">Relatórios Avançados</h3>
+                        <p>Gere relatórios detalhados sobre seus casos e performance.</p>
+                    </div>
+                    
+                    <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <div style="font-size: 3rem; color: var(--neutral); margin-bottom: 1rem;">🔒</div>
+                        <h3 style="color: var(--neutral); margin-bottom: 1rem;">Segurança Total</h3>
+                        <p>Seus dados protegidos com criptografia de ponta a ponta.</p>
+                    </div>
+                    
+                    <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <div style="font-size: 3rem; color: var(--warning); margin-bottom: 1rem;">⚡</div>
+                        <h3 style="color: var(--warning); margin-bottom: 1rem;">Rápido e Intuitivo</h3>
+                        <p>Interface simples e fácil de usar, sem necessidade de treinamento.</p>
+                    </div>
+                    
+                    <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <div style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;">📱</div>
+                        <h3 style="color: var(--danger); margin-bottom: 1rem;">Totalmente Responsivo</h3>
+                        <p>Acesse de qualquer dispositivo: computador, tablet ou smartphone.</p>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 3rem;">
+                    <button class="btn btn-primary" style="font-size: 1.2rem; padding: 1rem 2rem;" onclick="showLoginPage()">
+                        Começar por R$ 84,50/mês
+                    </button>
+                    <p style="margin-top: 1rem; color: var(--neutral);">7 dias de garantia ou seu dinheiro de volta</p>
+                </div>
+            </div>
+        </section>
+
+        <footer style="background: var(--dark); color: white; padding: 2rem; text-align: center;">
+            <p>© 2024 BIXXJURIS - Todos os direitos reservados</p>
+            <p style="opacity: 0.8; margin-top: 0.5rem;">Soluções jurídicas inteligentes para advogados modernos</p>
+        </footer>
+    </div>
+    
+    <div id="loginPage" class="login-container d-none">
         <div class="login-box">
             <div class="login-logo">
                 <h1>BIXXJURIS</h1>
@@ -588,14 +711,12 @@
             </form>
             
             <div class="text-center mt-20">
-                <p>Não tem uma conta? <a href="#" onclick="showRegisterForm()">Cadastre-se</a></p>
+                <p id="toggleLoginText">Não tem uma conta? <a href="#" onclick="showRegisterForm()">Cadastre-se</a></p>
             </div>
         </div>
     </div>
 
-    <!-- Aplicação Principal -->
     <div id="app" class="app-container d-none">
-        <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h1>BIXXJURIS</h1>
@@ -639,9 +760,7 @@
             </button>
         </div>
         
-        <!-- Conteúdo Principal -->
         <div class="main-content" id="mainContent">
-            <!-- Header -->
             <div class="header">
                 <div>
                     <button class="btn btn-outline mobile-menu-btn d-none" id="mobileMenuBtn">
@@ -656,9 +775,7 @@
                 </div>
             </div>
             
-            <!-- Conteúdo das Páginas -->
             <div class="page-content">
-                <!-- Página: Dashboard -->
                 <div id="dashboardPage" class="page">
                     <h2 class="page-title">Dashboard</h2>
                     
@@ -701,13 +818,11 @@
                                 </tr>
                             </thead>
                             <tbody id="recentCasesTable">
-                                <!-- Dados serão preenchidos via JavaScript -->
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
                 
-                <!-- Página: Meus Casos -->
                 <div id="casesPage" class="page d-none">
                     <div class="d-flex justify-between align-center mb-20">
                         <h2 class="page-title">Meus Casos</h2>
@@ -745,13 +860,11 @@
                                 </tr>
                             </thead>
                             <tbody id="casesTable">
-                                <!-- Dados serão preenchidos via JavaScript -->
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
                 
-                <!-- Página: Adicionar/Editar Caso -->
                 <div id="addCasePage" class="page d-none">
                     <h2 class="page-title" id="caseFormTitle">Novo Caso</h2>
                     
@@ -789,867 +902,626 @@
                                 </select>
                             </div>
                             
-                            <div class="form-group">
-                                <label for="caseDate">Data de Criação</label>
-                                <input type="date" id="caseDate" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="caseFile">Anexar Documento (opcional)</label>
-                                <input type="file" id="caseFile">
-                            </div>
-                            
-                            <div class="action-buttons">
-                                <button type="submit" class="btn btn-primary">Salvar Caso</button>
-                                <button type="button" class="btn btn-outline" onclick="showPage('cases')">Cancelar</button>
-                            </div>
+                            <button type="submit" class="btn btn-primary w-100" id="saveCaseBtn">
+                                Salvar Caso
+                            </button>
                         </form>
                     </div>
                 </div>
-                
-                <!-- Página: Clientes -->
+
                 <div id="clientsPage" class="page d-none">
-                    <h2 class="page-title">Clientes</h2>
-                    
+                    <div class="d-flex justify-between align-center mb-20">
+                        <h2 class="page-title">Clientes</h2>
+                        <button class="btn btn-primary" onclick="showModal('addClientModal')">
+                            <i class="fas fa-user-plus"></i> Novo Cliente
+                        </button>
+                    </div>
                     <div class="table-container">
-                        <table>
+                        <table id="clientsTable">
                             <thead>
                                 <tr>
                                     <th>Nome</th>
                                     <th>E-mail</th>
                                     <th>Telefone</th>
-                                    <th>Casos Ativos</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
-                            <tbody id="clientsTable">
-                                <!-- Dados serão preenchidos via JavaScript -->
-                            </tbody>
+                            <tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
-                
-                <!-- Página: Relatórios -->
+
                 <div id="reportsPage" class="page d-none">
                     <h2 class="page-title">Relatórios</h2>
-                    
-                    <div class="stats-cards">
-                        <div class="stat-card primary">
-                            <i class="fas fa-chart-line"></i>
-                            <div class="stat-value" id="reportTotalCases">0</div>
-                            <div class="stat-label">Total de Casos</div>
-                        </div>
-                        
-                        <div class="stat-card secondary">
-                            <i class="fas fa-check-circle"></i>
-                            <div class="stat-value" id="reportResolvedCases">0</div>
-                            <div class="stat-label">Resolvidos</div>
-                        </div>
-                        
-                        <div class="stat-card accent">
-                            <i class="fas fa-clock"></i>
-                            <div class="stat-value" id="reportPendingCases">0</div>
-                            <div class="stat-label">Pendentes</div>
-                        </div>
-                        
-                        <div class="stat-card neutral">
-                            <i class="fas fa-dollar-sign"></i>
-                            <div class="stat-value" id="reportTotalValue">R$ 0</div>
-                            <div class="stat-label">Valor Total</div>
-                        </div>
+                    <div class="d-flex justify-between align-center mb-20">
+                        <p>Aqui você pode gerar relatórios detalhados dos seus casos.</p>
+                        <button class="btn btn-secondary" onclick="generateReport()">
+                            <i class="fas fa-download"></i> Gerar Relatório PDF
+                        </button>
                     </div>
-                    
-                    <div class="form-container">
-                        <h3>Gerar Relatório</h3>
-                        <form id="reportForm">
-                            <div class="form-group">
-                                <label for="reportType">Tipo de Relatório</label>
-                                <select id="reportType">
-                                    <option value="cases">Casos por Status</option>
-                                    <option value="financial">Financeiro</option>
-                                    <option value="clients">Casos por Cliente</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="reportPeriod">Período</label>
-                                <select id="reportPeriod">
-                                    <option value="all">Todo o período</option>
-                                    <option value="month">Este mês</option>
-                                    <option value="quarter">Este trimestre</option>
-                                    <option value="year">Este ano</option>
-                                    <option value="custom">Personalizado</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group d-none" id="customDateRange">
-                                <div class="d-flex" style="gap: 10px;">
-                                    <div style="flex: 1;">
-                                        <label for="startDate">Data Inicial</label>
-                                        <input type="date" id="startDate">
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <label for="endDate">Data Final</label>
-                                        <input type="date" id="endDate">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-download"></i> Gerar Relatório
-                            </button>
-                        </form>
-                    </div>
+                    <div id="reportContent" style="background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        </div>
                 </div>
-                
-                <!-- Página: Configurações -->
+
                 <div id="settingsPage" class="page d-none">
                     <h2 class="page-title">Configurações</h2>
-                    
                     <div class="form-container">
-                        <h3>Perfil do Usuário</h3>
-                        <form id="profileForm">
-                            <div class="form-group">
-                                <label for="userNameInput">Nome Completo</label>
-                                <input type="text" id="userNameInput" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="userEmail">E-mail</label>
-                                <input type="email" id="userEmail" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="userPhone">Telefone</label>
-                                <input type="tel" id="userPhone">
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                        </form>
-                        
-                        <hr style="margin: 30px 0;">
-                        
-                        <h3>Alterar Senha</h3>
-                        <form id="passwordForm">
-                            <div class="form-group">
-                                <label for="currentPassword">Senha Atual</label>
-                                <input type="password" id="currentPassword">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="newPassword">Nova Senha</label>
-                                <input type="password" id="newPassword">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="confirmPassword">Confirmar Nova Senha</label>
-                                <input type="password" id="confirmPassword">
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary">Alterar Senha</button>
-                        </form>
-                        
-                        <hr style="margin: 30px 0;">
-                        
-                        <h3>Assinatura</h3>
-                        <div class="d-flex justify-between align-center">
-                            <div>
-                                <p><strong>Plano Atual:</strong> Básico - R$ 50,00/mês</p>
-                                <p>Próxima cobrança: <span id="nextBillingDate">01/12/2023</span></p>
-                            </div>
-                            <button class="btn btn-outline">Alterar Plano</button>
+                        <p>Configurações da conta e do perfil do usuário.</p>
+                        <div class="form-group">
+                            <label>Nome do Usuário:</label>
+                            <input type="text" id="profileName" readonly>
                         </div>
+                        <div class="form-group">
+                            <label>E-mail:</label>
+                            <input type="email" id="profileEmail" readonly>
+                        </div>
+                        <button class="btn btn-danger" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Sair da Conta
+                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal para visualizar/editar caso -->
-    <div class="modal" id="caseModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modalCaseTitle">Detalhes do Caso</h3>
-                <button class="close-modal" onclick="closeModal('caseModal')">&times;</button>
-            </div>
-            
-            <div id="modalCaseContent">
-                <!-- Conteúdo será preenchidos via JavaScript -->
-            </div>
-            
-            <div class="action-buttons mt-20">
-                <button class="btn btn-primary" onclick="editCase()">Editar</button>
-                <button class="btn btn-outline" onclick="closeModal('caseModal')">Fechar</button>
             </div>
         </div>
     </div>
 
+    <div id="addClientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="clientModalTitle">Adicionar Cliente</h3>
+                <button class="close-modal" onclick="closeModal('addClientModal')">&times;</button>
+            </div>
+            <form id="clientForm">
+                <input type="hidden" id="clientId">
+                <div class="form-group">
+                    <label for="clientName">Nome</label>
+                    <input type="text" id="clientName" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientEmail">E-mail</label>
+                    <input type="email" id="clientEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientPhone">Telefone</label>
+                    <input type="tel" id="clientPhone">
+                </div>
+                <button type="submit" class="btn btn-primary w-100" id="saveClientBtn">
+                    Salvar Cliente
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
+        import {
+            getAuth,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            setDoc,
+            addDoc,
+            getDoc,
+            collection,
+            query,
+            where,
+            getDocs,
+            deleteDoc
+        } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPFI-8FJJ2ACpxZhYcjW3ol9CBJzT_hAA",
+            authDomain: "bixxjuris.firebaseapp.com",
+            projectId: "bixxjuris",
+            storageBucket: "bixxjuris.firebasestorage.app",
+            messagingSenderId: "560618621657",
+            appId: "1:560618621657:web:80aa9231e2b379473dccc8",
+            measurementId: "G-WKZS0ZCKHC"
+        };
+    
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+    
+        window.firebase = {
+            auth,
+            db,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            onAuthStateChanged,
+            signOut,
+            doc,
+            setDoc,
+            addDoc,
+            getDoc,
+            collection,
+            query,
+            where,
+            getDocs,
+            deleteDoc
+        };
+    </script>
     <script>
-        // Dados de exemplo (em produção, isso viria de um backend)
+        // DOM Elements
+        const landingPage = document.getElementById('landingPage');
+        const loginPage = document.getElementById('loginPage');
+        const app = document.getElementById('app');
+        const loginForm = document.getElementById('loginForm');
+        const caseForm = document.getElementById('caseForm');
+        const clientForm = document.getElementById('clientForm');
+        const casesTableBody = document.getElementById('casesTable');
+        const recentCasesTableBody = document.getElementById('recentCasesTable');
+        const clientsTableBody = document.getElementById('clientsTable').querySelector('tbody');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const pageTitleElement = document.getElementById('pageTitle');
+
         let currentUser = null;
-        let cases = JSON.parse(localStorage.getItem('cases')) || [];
-        let users = JSON.parse(localStorage.getItem('users')) || [
-            { id: 1, name: "João Silva", email: "joao@exemplo.com", password: "123456" }
-        ];
-        
-        // Inicialização da aplicação
-        document.addEventListener('DOMContentLoaded', function() {
-            // Verificar se há um usuário logado
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                showApp();
-            } else {
-                showLogin();
-            }
-            
-            // Configurar eventos
-            setupEventListeners();
-            
-            // Inicializar dados de exemplo se necessário
-            if (cases.length === 0) {
-                initializeSampleData();
-            }
-        });
-        
-        // Configurar eventos
-        function setupEventListeners() {
-            // Login
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            
-            // Formulário de caso
-            document.getElementById('caseForm').addEventListener('submit', handleCaseSubmit);
-            
-            // Menu da sidebar
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const page = this.getAttribute('data-page');
-                    showPage(page);
-                    
-                    // Atualizar item ativo
-                    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-            
-            // Toggle sidebar
-            document.getElementById('toggleSidebar').addEventListener('click', toggleSidebar);
-            
-            // Filtro de relatório
-            document.getElementById('reportPeriod').addEventListener('change', function() {
-                document.getElementById('customDateRange').classList.toggle('d-none', this.value !== 'custom');
-            });
-            
-            // Novos listeners
-            document.getElementById('reportForm').addEventListener('submit', handleReportGenerate);
-            document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
-            document.getElementById('passwordForm').addEventListener('submit', handlePasswordChange);
-            document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileSidebar);
-            document.getElementById('caseSearch').addEventListener('input', filterCases);
-            document.getElementById('statusFilter').addEventListener('change', filterCases);
-        }
-        
-        // Inicializar dados de exemplo
-        function initializeSampleData() {
-            cases = [
-                {
-                    id: 1,
-                    title: "Caso de Divórcio Consensual",
-                    description: "Processo de divórcio consensual entre as partes.",
-                    client: "Maria Santos",
-                    value: 2500.00,
-                    status: "resolved",
-                    date: "2023-10-15",
-                    userId: 1
-                },
-                {
-                    id: 2,
-                    title: "Contrato de Prestação de Serviços",
-                    description: "Elaboração de contrato para empresa de tecnologia.",
-                    client: "Tech Solutions Ltda",
-                    value: 1500.00,
-                    status: "in-progress",
-                    date: "2023-11-05",
-                    userId: 1
-                },
-                {
-                    id: 3,
-                    title: "Ação de Cobrança",
-                    description: "Cobrança judicial de dívida comercial.",
-                    client: "Comércio Express",
-                    value: 3500.00,
-                    status: "pending",
-                    date: "2023-11-10",
-                    userId: 1
-                },
-                {
-                    id: 4,
-                    title: "Acordo Trabalhista",
-                    description: "Negociação de acordo em processo trabalhista.",
-                    client: "José Oliveira",
-                    value: 4200.00,
-                    status: "agreed",
-                    date: "2023-11-12",
-                    userId: 1
-                }
-            ];
-            
-            localStorage.setItem('cases', JSON.stringify(cases));
-        }
-        
-        // Mostrar tela de login
-        function showLogin() {
-            document.getElementById('loginPage').classList.remove('d-none');
-            document.getElementById('app').classList.add('d-none');
-        }
-        
-        // Mostrar aplicação
-        function showApp() {
-            document.getElementById('loginPage').classList.add('d-none');
-            document.getElementById('app').classList.remove('d-none');
-            
-            // Atualizar informações do usuário
-            document.getElementById('userName').textContent = currentUser.name;
-            document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
-            
-            // Carregar dashboard
-            showPage('dashboard');
-        }
-        
-        // Manipular login
-        function handleLogin(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Verificar credenciais (em produção, isso seria feito no backend)
-            const user = users.find(u => u.email === email && u.password === password);
-            
-            if (user) {
-                currentUser = user;
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                showApp();
-            } else {
-                alert('E-mail ou senha incorretos!');
-            }
-        }
-        
-        // Login com Google (simulação)
-        function loginWithGoogle() {
-            // Em produção, integrar com API do Google
-            currentUser = {
-                id: 2,
-                name: "Usuário Google",
-                email: "googleuser@exemplo.com"
-            };
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            showApp();
-        }
-        
-        // Login com Facebook (simulação)
-        function loginWithFacebook() {
-            // Em produção, integrar com API do Facebook
-            currentUser = {
-                id: 3,
-                name: "Usuário Facebook",
-                email: "facebookuser@exemplo.com"
-            };
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            showApp();
-        }
-        
-        // Mostrar formulário de registro
-        function showRegisterForm() {
-            alert('Funcionalidade de registro será implementada em versão futura.');
-        }
-        
-        // Logout
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('currentUser');
-            showLogin();
-        }
-        
-        // Alternar sidebar
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const toggleIcon = document.getElementById('toggleSidebar').querySelector('i');
-            
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            
-            if (sidebar.classList.contains('collapsed')) {
-                toggleIcon.className = 'fas fa-chevron-right';
-            } else {
-                toggleIcon.className = 'fas fa-chevron-left';
-            }
-        }
-        
-        // Alternar sidebar mobile
-        function toggleMobileSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('mobile-open');
-        }
-        
-        // Mostrar página específica
-        function showPage(pageName, params = {}) {
-            // Ocultar todas as páginas
+
+        // --- Gerenciamento de Páginas e Navegação ---
+
+        function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.add('d-none');
             });
-            
-            // Mostrar página solicitada
-            document.getElementById(pageName + 'Page').classList.remove('d-none');
-            
-            // Atualizar dados se necessário
-            if (pageName === 'dashboard') {
-                updateDashboard();
-            } else if (pageName === 'cases') {
-                updateCasesTable();
-            } else if (pageName === 'addCase') {
-                setupCaseForm(params.caseId);
-            } else if (pageName === 'clients') {
-                updateClientsTable();
-            } else if (pageName === 'reports') {
-                updateReports();
-            } else if (pageName === 'settings') {
-                setupSettings();
-            }
-        }
-        
-        // Atualizar dashboard
-        function updateDashboard() {
-            const userCases = cases.filter(c => c.userId === currentUser.id);
-            const totalCases = userCases.length;
-            const resolvedCases = userCases.filter(c => c.status === 'resolved' || c.status === 'agreed').length;
-            const pendingCases = userCases.filter(c => c.status === 'pending').length;
-            const totalValue = userCases.reduce((sum, c) => sum + (c.value || 0), 0);
-            
-            document.getElementById('totalCases').textContent = totalCases;
-            document.getElementById('resolvedCases').textContent = resolvedCases;
-            document.getElementById('pendingCases').textContent = pendingCases;
-            document.getElementById('totalValue').textContent = `R$ ${totalValue.toFixed(2)}`;
-            
-            // Atualizar tabela de casos recentes
-            const recentCasesTable = document.getElementById('recentCasesTable');
-            recentCasesTable.innerHTML = '';
-            
-            const recentCases = userCases
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 5);
-            
-            recentCases.forEach(caseItem => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${caseItem.title}</td>
-                    <td>${caseItem.client}</td>
-                    <td>R$ ${caseItem.value ? caseItem.value.toFixed(2) : '0.00'}</td>
-                    <td><span class="status-badge status-${caseItem.status}">${getStatusText(caseItem.status)}</span></td>
-                    <td>${formatDate(caseItem.date)}</td>
-                `;
-                recentCasesTable.appendChild(row);
+            document.getElementById(pageId + 'Page').classList.remove('d-none');
+
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
             });
-        }
-        
-        // Atualizar tabela de casos
-        function updateCasesTable() {
-            filterCases(); // Chama o filtro para atualizar com os valores atuais
-        }
-        
-        // Filtrar casos
-        function filterCases() {
-            const searchTerm = document.getElementById('caseSearch').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            
-            const casesTable = document.getElementById('casesTable');
-            casesTable.innerHTML = '';
-            
-            const userCases = cases.filter(c => c.userId === currentUser.id);
-            const filteredCases = userCases.filter(c => {
-                const matchesSearch = c.title.toLowerCase().includes(searchTerm) || 
-                                     c.client.toLowerCase().includes(searchTerm);
-                const matchesStatus = !statusFilter || c.status === statusFilter;
-                
-                return matchesSearch && matchesStatus;
-            });
-            
-            filteredCases.forEach(caseItem => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${caseItem.title}</td>
-                    <td>${caseItem.client}</td>
-                    <td>R$ ${caseItem.value ? caseItem.value.toFixed(2) : '0.00'}</td>
-                    <td><span class="status-badge status-${caseItem.status}">${getStatusText(caseItem.status)}</span></td>
-                    <td>${formatDate(caseItem.date)}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn btn-outline btn-sm" onclick="viewCase(${caseItem.id})">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-outline btn-sm" onclick="editCaseForm(${caseItem.id})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteCase(${caseItem.id})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                casesTable.appendChild(row);
-            });
-        }
-        
-        // Configurar formulário de caso (novo ou edição)
-        function setupCaseForm(caseId = null) {
-            const formTitle = document.getElementById('caseFormTitle');
-            const caseForm = document.getElementById('caseForm');
-            
-            if (caseId) {
-                // Modo edição
-                formTitle.textContent = 'Editar Caso';
-                const caseItem = cases.find(c => c.id === caseId);
-                if (caseItem) {
-                    document.getElementById('caseId').value = caseItem.id;
-                    document.getElementById('caseTitle').value = caseItem.title || '';
-                    document.getElementById('caseDescription').value = caseItem.description || '';
-                    document.getElementById('caseClient').value = caseItem.client || '';
-                    document.getElementById('caseValue').value = caseItem.value || '';
-                    document.getElementById('caseStatus').value = caseItem.status || 'pending';
-                    document.getElementById('caseDate').value = caseItem.date || '';
-                } else {
-                    alert('Caso não encontrado!');
-                    showPage('cases');
-                }
-            } else {
-                // Modo novo caso
-                formTitle.textContent = 'Novo Caso';
-                caseForm.reset();
-                document.getElementById('caseId').value = '';
-                document.getElementById('caseDate').value = new Date().toISOString().split('T')[0];
+            document.querySelector(`.menu-item[data-page="${pageId}"]`).classList.add('active');
+
+            // Atualiza o conteúdo dinâmico
+            if (pageId === 'cases') {
+                fetchCases();
+            } else if (pageId === 'clients') {
+                fetchClients();
+            } else if (pageId === 'dashboard') {
+                fetchDashboardData();
             }
         }
-        
-        // Manipular envio do formulário de caso
-        function handleCaseSubmit(e) {
-            e.preventDefault();
-            
-            const caseId = document.getElementById('caseId').value;
-            const title = document.getElementById('caseTitle').value;
-            const description = document.getElementById('caseDescription').value;
-            const client = document.getElementById('caseClient').value;
-            const value = parseFloat(document.getElementById('caseValue').value) || 0;
-            const status = document.getElementById('caseStatus').value;
-            const date = document.getElementById('caseDate').value;
-            
-            if (caseId) {
-                // Editar caso existente
-                const index = cases.findIndex(c => c.id === parseInt(caseId));
-                if (index !== -1) {
-                    cases[index] = {
-                        ...cases[index],
-                        title,
-                        description,
-                        client,
-                        value,
-                        status,
-                        date
-                    };
-                }
-            } else {
-                // Criar novo caso
-                const newCase = {
-                    id: cases.length > 0 ? Math.max(...cases.map(c => c.id)) + 1 : 1,
-                    title,
-                    description,
-                    client,
-                    value,
-                    status,
-                    date,
-                    userId: currentUser.id
-                };
-                cases.push(newCase);
-            }
-            
-            // Salvar no localStorage
-            localStorage.setItem('cases', JSON.stringify(cases));
-            
-            // Mostrar mensagem de sucesso
-            alert('Caso salvo com sucesso!');
-            
-            // Voltar para a lista de casos
-            showPage('cases');
+
+        function showLoginPage() {
+            landingPage.classList.add('d-none');
+            loginPage.classList.remove('d-none');
+        }
+
+        function showApp() {
+            loginPage.classList.add('d-none');
+            app.classList.remove('d-none');
+        }
+
+        function showRegisterForm() {
+            document.getElementById('toggleLoginText').innerHTML = 'Já tem uma conta? <a href="#" onclick="showLoginForm()">Faça login</a>';
+            document.getElementById('saveCaseBtn').innerText = 'Cadastrar';
         }
         
-        // Visualizar caso
-        function viewCase(caseId) {
-            const caseItem = cases.find(c => c.id === caseId);
-            if (!caseItem) return;
-            
-            document.getElementById('modalCaseTitle').textContent = caseItem.title;
-            
-            const modalContent = document.getElementById('modalCaseContent');
-            modalContent.innerHTML = `
-                <p><strong>Cliente:</strong> ${caseItem.client}</p>
-                <p><strong>Valor:</strong> R$ ${caseItem.value ? caseItem.value.toFixed(2) : '0.00'}</p>
-                <p><strong>Status:</strong> <span class="status-badge status-${caseItem.status}">${getStatusText(caseItem.status)}</span></p>
-                <p><strong>Data de Criação:</strong> ${formatDate(caseItem.date)}</p>
-                <p><strong>Descrição:</strong></p>
-                <p>${caseItem.description}</p>
-            `;
-            
-            // Armazenar ID do caso para possível edição
-            modalContent.setAttribute('data-case-id', caseId);
-            
-            openModal('caseModal');
+        function showLoginForm() {
+            document.getElementById('toggleLoginText').innerHTML = 'Não tem uma conta? <a href="#" onclick="showRegisterForm()">Cadastre-se</a>';
+            document.getElementById('saveCaseBtn').innerText = 'Entrar';
         }
-        
-        // Editar caso a partir do modal
-        function editCase() {
-            const caseId = document.getElementById('modalCaseContent').getAttribute('data-case-id');
-            closeModal('caseModal');
-            editCaseForm(parseInt(caseId));
-        }
-        
-        // Abrir formulário de edição
-        function editCaseForm(caseId) {
-            showPage('addCase', {caseId: caseId});
-        }
-        
-        // Excluir caso
-        function deleteCase(caseId) {
-            if (confirm('Tem certeza que deseja excluir este caso?')) {
-                cases = cases.filter(c => c.id !== caseId);
-                localStorage.setItem('cases', JSON.stringify(cases));
-                updateCasesTable();
-            }
-        }
-        
-        // Atualizar tabela de clientes
-        function updateClientsTable() {
-            const clientsTable = document.getElementById('clientsTable');
-            clientsTable.innerHTML = '';
-            
-            // Extrair clientes únicos dos casos
-            const clientsMap = new Map();
-            const userCases = cases.filter(c => c.userId === currentUser.id);
-            
-            userCases.forEach(caseItem => {
-                if (!clientsMap.has(caseItem.client)) {
-                    clientsMap.set(caseItem.client, {
-                        name: caseItem.client,
-                        email: `${caseItem.client.replace(/\s+/g, '').toLowerCase()}@exemplo.com`,
-                        phone: '(11) 9' + Math.floor(10000000 + Math.random() * 90000000), // Telefone fixo gerado uma vez
-                        activeCases: 0
-                    });
-                }
-                const client = clientsMap.get(caseItem.client);
-                if (caseItem.status === 'pending' || caseItem.status === 'in-progress') {
-                    client.activeCases++;
-                }
-            });
-            
-            clientsMap.forEach(client => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${client.name}</td>
-                    <td>${client.email}</td>
-                    <td>${client.phone}</td>
-                    <td>${client.activeCases}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn btn-outline btn-sm" onclick="viewClientEmail('${client.email}')">
-                                <i class="fas fa-envelope"></i>
-                            </button>
-                            <button class="btn btn-outline btn-sm" onclick="viewClientPhone('${client.phone}')">
-                                <i class="fas fa-phone"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                clientsTable.appendChild(row);
-            });
-        }
-        
-        // Funções para visualizar e-mail e telefone do cliente
-        function viewClientEmail(email) {
-            alert(`E-mail do cliente: ${email}`);
-        }
-        
-        function viewClientPhone(phone) {
-            alert(`Telefone do cliente: ${phone}`);
-        }
-        
-        // Atualizar relatórios
-        function updateReports() {
-            const userCases = cases.filter(c => c.userId === currentUser.id);
-            const totalCases = userCases.length;
-            const resolvedCases = userCases.filter(c => c.status === 'resolved' || c.status === 'agreed').length;
-            const pendingCases = userCases.filter(c => c.status === 'pending').length;
-            const totalValue = userCases.reduce((sum, c) => sum + (c.value || 0), 0);
-            
-            document.getElementById('reportTotalCases').textContent = totalCases;
-            document.getElementById('reportResolvedCases').textContent = resolvedCases;
-            document.getElementById('reportPendingCases').textContent = pendingCases;
-            document.getElementById('reportTotalValue').textContent = `R$ ${totalValue.toFixed(2)}`;
-        }
-        
-        // Manipular geração de relatório
-        function handleReportGenerate(e) {
-            e.preventDefault();
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const type = document.getElementById('reportType').value;
-            const period = document.getElementById('reportPeriod').value;
-            let startDate, endDate;
-            
-            if (period === 'custom') {
-                startDate = new Date(document.getElementById('startDate').value);
-                endDate = new Date(document.getElementById('endDate').value);
-            } else {
-                endDate = new Date();
-                if (period === 'month') {
-                    startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
-                } else if (period === 'quarter') {
-                    startDate = new Date(endDate.getFullYear(), Math.floor(endDate.getMonth() / 3) * 3, 1);
-                } else if (period === 'year') {
-                    startDate = new Date(endDate.getFullYear(), 0, 1);
-                } else {
-                    startDate = new Date(0); // Todo o período
-                }
-            }
-            
-            const filteredCases = cases.filter(c => {
-                const caseDate = new Date(c.date);
-                return c.userId === currentUser.id && caseDate >= startDate && caseDate <= endDate;
-            });
-            
-            let yPos = 10;
-            doc.text(`Relatório de ${type} para o período: ${formatDate(startDate)} a ${formatDate(endDate)}`, 10, yPos);
-            yPos += 10;
-            
-            if (type === 'cases') {
-                const pending = filteredCases.filter(c => c.status === 'pending').length;
-                const inProgress = filteredCases.filter(c => c.status === 'in-progress').length;
-                const resolved = filteredCases.filter(c => c.status === 'resolved').length;
-                const agreed = filteredCases.filter(c => c.status === 'agreed').length;
-                doc.text(`Pendentes: ${pending}`, 10, yPos);
-                yPos += 10;
-                doc.text(`Em andamento: ${inProgress}`, 10, yPos);
-                yPos += 10;
-                doc.text(`Resolvidos: ${resolved}`, 10, yPos);
-                yPos += 10;
-                doc.text(`Acordados: ${agreed}`, 10, yPos);
-            } else if (type === 'financial') {
-                const totalValue = filteredCases.reduce((sum, c) => sum + (c.value || 0), 0);
-                doc.text(`Valor Total: R$ ${totalValue.toFixed(2)}`, 10, yPos);
-            } else if (type === 'clients') {
-                const clientsMap = new Map();
-                filteredCases.forEach(c => {
-                    clientsMap.set(c.client, (clientsMap.get(c.client) || 0) + 1);
-                });
-                clientsMap.forEach((count, client) => {
-                    doc.text(`${client}: ${count} casos`, 10, yPos);
-                    yPos += 10;
-                });
-            }
-            
-            doc.save('relatorio.pdf');
-        }
-        
-        // Configurar página de configurações
-        function setupSettings() {
-            document.getElementById('userNameInput').value = currentUser.name || '';
-            document.getElementById('userEmail').value = currentUser.email || '';
-            document.getElementById('userPhone').value = currentUser.phone || '';
-        }
-        
-        // Manipular atualização de perfil
-        function handleProfileUpdate(e) {
-            e.preventDefault();
-            const name = document.getElementById('userNameInput').value;
-            const email = document.getElementById('userEmail').value;
-            const phone = document.getElementById('userPhone').value;
-            
-            currentUser.name = name;
-            currentUser.email = email;
-            currentUser.phone = phone;
-            
-            const userIndex = users.findIndex(u => u.id === currentUser.id);
-            if (userIndex !== -1) {
-                users[userIndex] = { ...currentUser };
-                localStorage.setItem('users', JSON.stringify(users));
-            }
-            
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            document.getElementById('userName').textContent = name;
-            document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
-            
-            alert('Perfil atualizado com sucesso!');
-        }
-        
-        // Manipular alteração de senha
-        function handlePasswordChange(e) {
-            e.preventDefault();
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (currentPassword !== currentUser.password) {
-                alert('Senha atual incorreta!');
-                return;
-            }
-            
-            if (newPassword !== confirmPassword) {
-                alert('As novas senhas não coincidem!');
-                return;
-            }
-            
-            if (newPassword.length < 6) {
-                alert('A nova senha deve ter pelo menos 6 caracteres!');
-                return;
-            }
-            
-            currentUser.password = newPassword;
-            
-            const userIndex = users.findIndex(u => u.id === currentUser.id);
-            if (userIndex !== -1) {
-                users[userIndex] = { ...currentUser };
-                localStorage.setItem('users', JSON.stringify(users));
-            }
-            
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            alert('Senha alterada com sucesso!');
-            document.getElementById('passwordForm').reset();
-        }
-        
-        // Abrir modal
-        function openModal(modalId) {
+
+        // --- Modals ---
+        window.showModal = (modalId) => {
             document.getElementById(modalId).style.display = 'flex';
         }
-        
-        // Fechar modal
-        function closeModal(modalId) {
+
+        window.closeModal = (modalId) => {
             document.getElementById(modalId).style.display = 'none';
+            document.getElementById('clientForm').reset();
+            document.getElementById('clientId').value = '';
+            document.getElementById('clientModalTitle').innerText = 'Adicionar Cliente';
         }
-        
-        // Obter texto do status
-        function getStatusText(status) {
-            const statusMap = {
-                'pending': 'Pendente',
-                'in-progress': 'Em andamento',
-                'resolved': 'Resolvido',
-                'agreed': 'Acordado'
+
+        // --- Autenticação Firebase ---
+
+        window.logout = async () => {
+            try {
+                await firebase.signOut(firebase.auth);
+            } catch (error) {
+                console.error("Erro ao fazer logout:", error);
+            }
+        };
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const isRegistering = document.getElementById('toggleLoginText').innerText.includes('Faça login');
+
+            try {
+                if (isRegistering) {
+                    const userCredential = await firebase.createUserWithEmailAndPassword(firebase.auth, email, password);
+                    currentUser = userCredential.user;
+                    // Salvar dados do usuário no Firestore
+                    await firebase.setDoc(firebase.doc(firebase.db, "users", currentUser.uid), {
+                        email: currentUser.email,
+                        createdAt: new Date()
+                    });
+                } else {
+                    const userCredential = await firebase.signInWithEmailAndPassword(firebase.auth, email, password);
+                    currentUser = userCredential.user;
+                }
+            } catch (error) {
+                console.error("Erro de autenticação:", error.message);
+                alert("Erro de autenticação: " + error.message);
+            }
+        });
+
+        // Observa o estado da autenticação
+        firebase.onAuthStateChanged(firebase.auth, (user) => {
+            if (user) {
+                currentUser = user;
+                showApp();
+                document.getElementById('userName').innerText = user.email.split('@')[0];
+                document.getElementById('userAvatar').innerText = user.email.charAt(0).toUpperCase();
+                showPage('dashboard');
+            } else {
+                currentUser = null;
+                loginPage.classList.remove('d-none');
+                app.classList.add('d-none');
+            }
+        });
+
+        // --- Gerenciamento de Casos ---
+
+        caseForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const caseId = document.getElementById('caseId').value;
+            const caseTitle = document.getElementById('caseTitle').value;
+            const caseDescription = document.getElementById('caseDescription').value;
+            const caseClient = document.getElementById('caseClient').value;
+            const caseValue = parseFloat(document.getElementById('caseValue').value) || 0;
+            const caseStatus = document.getElementById('caseStatus').value;
+
+            const caseData = {
+                userId: currentUser.uid,
+                title: caseTitle,
+                description: caseDescription,
+                client: caseClient,
+                value: caseValue,
+                status: caseStatus,
+                createdAt: new Date().toISOString()
             };
-            return statusMap[status] || status;
+
+            try {
+                if (caseId) {
+                    // Editar caso existente
+                    await firebase.setDoc(firebase.doc(firebase.db, "cases", caseId), caseData);
+                    alert("Caso atualizado com sucesso!");
+                } else {
+                    // Adicionar novo caso
+                    await firebase.addDoc(firebase.collection(firebase.db, "cases"), caseData);
+                    alert("Caso adicionado com sucesso!");
+                }
+                caseForm.reset();
+                showPage('cases'); // Volta para a lista de casos
+            } catch (error) {
+                console.error("Erro ao salvar o caso:", error);
+                alert("Erro ao salvar o caso.");
+            }
+        });
+
+        async function fetchCases() {
+            if (!currentUser) return;
+            casesTableBody.innerHTML = '';
+            try {
+                const q = firebase.query(firebase.collection(firebase.db, "cases"), firebase.where("userId", "==", currentUser.uid));
+                const querySnapshot = await firebase.getDocs(q);
+                let cases = [];
+                querySnapshot.forEach((doc) => {
+                    cases.push({ id: doc.id, ...doc.data() });
+                });
+                renderCases(cases);
+            } catch (error) {
+                console.error("Erro ao buscar casos:", error);
+            }
         }
-        
-        // Formatar data
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-            return new Date(dateString).toLocaleDateString('pt-BR', options);
+
+        function renderCases(cases) {
+            casesTableBody.innerHTML = '';
+            cases.forEach(caseItem => {
+                const statusMap = {
+                    'pending': { text: 'Pendente', class: 'status-pending' },
+                    'in-progress': { text: 'Em andamento', class: 'status-in-progress' },
+                    'resolved': { text: 'Resolvido', class: 'status-resolved' },
+                    'agreed': { text: 'Acordado', class: 'status-agreed' }
+                };
+                const statusInfo = statusMap[caseItem.status] || { text: caseItem.status, class: '' };
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${caseItem.title}</td>
+                    <td>${caseItem.client}</td>
+                    <td>R$ ${caseItem.value.toFixed(2)}</td>
+                    <td><span class="status-badge ${statusInfo.class}">${statusInfo.text}</span></td>
+                    <td>${new Date(caseItem.createdAt).toLocaleDateString()}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-outline" onclick="editCase('${caseItem.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCase('${caseItem.id}')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                casesTableBody.appendChild(row);
+            });
+        }
+
+        window.editCase = async (id) => {
+            try {
+                const docRef = firebase.doc(firebase.db, "cases", id);
+                const docSnap = await firebase.getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('caseId').value = id;
+                    document.getElementById('caseTitle').value = data.title;
+                    document.getElementById('caseDescription').value = data.description;
+                    document.getElementById('caseClient').value = data.client;
+                    document.getElementById('caseValue').value = data.value;
+                    document.getElementById('caseStatus').value = data.status;
+                    document.getElementById('caseFormTitle').innerText = 'Editar Caso';
+                    showPage('addCase');
+                }
+            } catch (error) {
+                console.error("Erro ao buscar caso para edição:", error);
+            }
+        }
+
+        window.deleteCase = async (id) => {
+            if (confirm("Tem certeza que deseja deletar este caso?")) {
+                try {
+                    await firebase.deleteDoc(firebase.doc(firebase.db, "cases", id));
+                    alert("Caso deletado com sucesso!");
+                    fetchCases();
+                } catch (error) {
+                    console.error("Erro ao deletar o caso:", error);
+                    alert("Erro ao deletar o caso.");
+                }
+            }
+        }
+
+        window.filterCases = () => {
+            const searchText = document.getElementById('caseSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            const rows = casesTableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const title = row.cells[0].innerText.toLowerCase();
+                const client = row.cells[1].innerText.toLowerCase();
+                const status = row.cells[3].querySelector('.status-badge').innerText.toLowerCase();
+                
+                const matchesSearch = title.includes(searchText) || client.includes(searchText);
+                const matchesStatus = statusFilter === '' || status === statusFilter.toLowerCase();
+                
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // --- Gerenciamento de Clientes ---
+        clientForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const clientId = document.getElementById('clientId').value;
+            const clientName = document.getElementById('clientName').value;
+            const clientEmail = document.getElementById('clientEmail').value;
+            const clientPhone = document.getElementById('clientPhone').value;
+
+            const clientData = {
+                userId: currentUser.uid,
+                name: clientName,
+                email: clientEmail,
+                phone: clientPhone
+            };
+
+            try {
+                if (clientId) {
+                    await firebase.setDoc(firebase.doc(firebase.db, "clients", clientId), clientData);
+                    alert("Cliente atualizado com sucesso!");
+                } else {
+                    await firebase.addDoc(firebase.collection(firebase.db, "clients"), clientData);
+                    alert("Cliente adicionado com sucesso!");
+                }
+                closeModal('addClientModal');
+                fetchClients();
+            } catch (error) {
+                console.error("Erro ao salvar cliente:", error);
+                alert("Erro ao salvar cliente.");
+            }
+        });
+
+        async function fetchClients() {
+            if (!currentUser) return;
+            clientsTableBody.innerHTML = '';
+            try {
+                const q = firebase.query(firebase.collection(firebase.db, "clients"), firebase.where("userId", "==", currentUser.uid));
+                const querySnapshot = await firebase.getDocs(q);
+                querySnapshot.forEach((doc) => {
+                    const client = doc.data();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${client.name}</td>
+                        <td>${client.email}</td>
+                        <td>${client.phone || '-'}</td>
+                        <td class="action-buttons">
+                            <button class="btn btn-sm btn-outline" onclick="editClient('${doc.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteClient('${doc.id}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    `;
+                    clientsTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Erro ao buscar clientes:", error);
+            }
+        }
+
+        window.editClient = async (id) => {
+            try {
+                const docRef = firebase.doc(firebase.db, "clients", id);
+                const docSnap = await firebase.getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('clientId').value = id;
+                    document.getElementById('clientName').value = data.name;
+                    document.getElementById('clientEmail').value = data.email;
+                    document.getElementById('clientPhone').value = data.phone;
+                    document.getElementById('clientModalTitle').innerText = 'Editar Cliente';
+                    showModal('addClientModal');
+                }
+            } catch (error) {
+                console.error("Erro ao buscar cliente para edição:", error);
+            }
+        }
+
+        window.deleteClient = async (id) => {
+            if (confirm("Tem certeza que deseja deletar este cliente?")) {
+                try {
+                    await firebase.deleteDoc(firebase.doc(firebase.db, "clients", id));
+                    alert("Cliente deletado com sucesso!");
+                    fetchClients();
+                } catch (error) {
+                    console.error("Erro ao deletar cliente:", error);
+                    alert("Erro ao deletar cliente.");
+                }
+            }
+        }
+
+        // --- Dashboard e Relatórios ---
+        async function fetchDashboardData() {
+            if (!currentUser) return;
+            try {
+                const q = firebase.query(firebase.collection(firebase.db, "cases"), firebase.where("userId", "==", currentUser.uid));
+                const querySnapshot = await firebase.getDocs(q);
+                
+                let totalCases = 0;
+                let resolvedCases = 0;
+                let pendingCases = 0;
+                let totalValue = 0;
+                let recentCases = [];
+
+                querySnapshot.forEach((doc) => {
+                    const caseData = doc.data();
+                    totalCases++;
+                    totalValue += caseData.value || 0;
+                    if (caseData.status === 'resolved' || caseData.status === 'agreed') {
+                        resolvedCases++;
+                    } else {
+                        pendingCases++;
+                    }
+                    recentCases.push(caseData);
+                });
+
+                document.getElementById('totalCases').innerText = totalCases;
+                document.getElementById('resolvedCases').innerText = resolvedCases;
+                document.getElementById('pendingCases').innerText = pendingCases;
+                document.getElementById('totalValue').innerText = `R$ ${totalValue.toFixed(2)}`;
+                
+                // Ordenar por data de criação e pegar os 5 mais recentes
+                recentCases.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                const recentCasesFormatted = recentCases.slice(0, 5);
+                renderRecentCases(recentCasesFormatted);
+
+            } catch (error) {
+                console.error("Erro ao buscar dados do dashboard:", error);
+            }
+        }
+
+        function renderRecentCases(cases) {
+            recentCasesTableBody.innerHTML = '';
+            cases.forEach(caseItem => {
+                const statusMap = {
+                    'pending': { text: 'Pendente', class: 'status-pending' },
+                    'in-progress': { text: 'Em andamento', class: 'status-in-progress' },
+                    'resolved': { text: 'Resolvido', class: 'status-resolved' },
+                    'agreed': { text: 'Acordado', class: 'status-agreed' }
+                };
+                const statusInfo = statusMap[caseItem.status] || { text: caseItem.status, class: '' };
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${caseItem.title}</td>
+                    <td>${caseItem.client}</td>
+                    <td>R$ ${caseItem.value.toFixed(2)}</td>
+                    <td><span class="status-badge ${statusInfo.class}">${statusInfo.text}</span></td>
+                    <td>${new Date(caseItem.createdAt).toLocaleDateString()}</td>
+                `;
+                recentCasesTableBody.appendChild(row);
+            });
+        }
+
+        window.generateReport = async () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const table = document.getElementById('casesTable');
+            const data = [];
+            
+            // Adiciona cabeçalho
+            data.push(["Título", "Cliente", "Valor (R$)", "Status", "Data de Criação"]);
+
+            // Adiciona dados da tabela
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                if(row.style.display !== 'none' && row.cells.length > 1) {
+                    const rowData = [
+                        row.cells[0].innerText,
+                        row.cells[1].innerText,
+                        row.cells[2].innerText,
+                        row.cells[3].innerText,
+                        row.cells[4].innerText
+                    ];
+                    data.push(rowData);
+                }
+            });
+
+            doc.text("Relatório de Casos Jurídicos", 14, 20);
+            doc.autoTable({
+                startY: 30,
+                head: [data[0]],
+                body: data.slice(1)
+            });
+
+            doc.save("relatorio-bixxjuris.pdf");
+        }
+
+        // --- UI Interactions ---
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                showPage(e.currentTarget.dataset.page);
+                if (window.innerWidth <= 576) {
+                    sidebar.classList.remove('mobile-open');
+                }
+            });
+        });
+
+        document.getElementById('toggleSidebar').addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            document.getElementById('toggleSidebar').querySelector('i').classList.toggle('fa-chevron-right');
+            document.getElementById('toggleSidebar').querySelector('i').classList.toggle('fa-chevron-left');
+        });
+
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            sidebar.classList.add('mobile-open');
+        });
+
+        window.scrollToBenefits = () => {
+            document.getElementById('benefits').scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </body>
