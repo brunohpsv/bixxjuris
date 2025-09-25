@@ -6,6 +6,81 @@
     <title>BIXXJURIS - Gestão Simplificada de Casos Jurídicos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged,
+            GoogleAuthProvider,
+            signInWithPopup,
+            FacebookAuthProvider
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc, 
+            setDoc, 
+            updateDoc,
+            collection,
+            query,
+            where,
+            getDocs,
+            addDoc,
+            deleteDoc
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPFI-8FJJ2ACpxZhYcjW3ol9CBJzT_hAA",
+            authDomain: "bixxjuris.firebaseapp.com",
+            projectId: "bixxjuris",
+            storageBucket: "bixxjuris.firebasestorage.app",
+            messagingSenderId: "560618621657",
+            appId: "1:560618621657:web:80aa9231e2b379473dccc8",
+            measurementId: "G-WKZS0ZCKHC"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Make Firebase available globally
+        window.firebase = {
+            auth: {
+                getAuth: () => auth,
+                signInWithEmailAndPassword,
+                createUserWithEmailAndPassword,
+                signOut,
+                onAuthStateChanged,
+                GoogleAuthProvider,
+                signInWithPopup,
+                FacebookAuthProvider
+            },
+            firestore: {
+                getFirestore: () => db,
+                doc,
+                getDoc,
+                setDoc,
+                updateDoc,
+                collection,
+                query,
+                where,
+                getDocs,
+                addDoc,
+                deleteDoc
+            }
+        };
+    </script>
+
     <style>
         /* Variáveis CSS para cores */
         :root {
@@ -483,6 +558,22 @@
             font-size: 0.9rem;
         }
 
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* Responsividade */
         @media (max-width: 768px) {
             .sidebar {
@@ -561,9 +652,12 @@
             </div>
 
             <div class="social-login">
-                <a href="index.html" class="btn btn-outline">
-                    <i class="fas fa-sign-in-alt"></i> Voltar
-                </a>
+                <button class="social-btn" onclick="loginWithGoogle()">
+                    <i class="fab fa-google"></i> Google
+                </button>
+                <button class="social-btn" onclick="loginWithFacebook()">
+                    <i class="fab fa-facebook"></i> Facebook
+                </button>
             </div>
 
             <div class="divider">
@@ -581,12 +675,52 @@
                     <input type="password" id="password" required>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100">Entrar</button>
+                <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+                    <span id="loginText">Entrar</span>
+                    <div class="loading d-none" id="loginLoading"></div>
+                </button>
             </form>
 
             <div class="text-center mt-20">
-                <p>Para se cadastrar é somente por e-mail, enviado uma solicitação. bixxjurtis@outlook.com.br</p>
+                <p>Não tem conta? <a href="javascript:void(0)" onclick="showRegisterForm()">Cadastre-se</a></p>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de Registro -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Criar Nova Conta</h3>
+                <button class="close-modal" onclick="closeModal('registerModal')">&times;</button>
+            </div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerName">Nome Completo</label>
+                    <input type="text" id="registerName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerEmail">E-mail</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword">Senha</label>
+                    <input type="password" id="registerPassword" required minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="registerConfirmPassword">Confirmar Senha</label>
+                    <input type="password" id="registerConfirmPassword" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100" id="registerBtn">
+                    <span id="registerText">Criar Conta</span>
+                    <div class="loading d-none" id="registerLoading"></div>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -791,13 +925,11 @@
                                 <input type="date" id="caseDate" required>
                             </div>
 
-                            <div class="form-group">
-                                <label for="caseFile">Anexar Documento (opcional)</label>
-                                <input type="file" id="caseFile">
-                            </div>
-
                             <div class="action-buttons">
-                                <button type="submit" class="btn btn-primary">Salvar Caso</button>
+                                <button type="submit" class="btn btn-primary" id="saveCaseBtn">
+                                    <span id="saveCaseText">Salvar Caso</span>
+                                    <div class="loading d-none" id="saveCaseLoading"></div>
+                                </button>
                                 <button type="button" class="btn btn-outline" onclick="showPage('cases')">Cancelar</button>
                             </div>
                         </form>
@@ -945,17 +1077,6 @@
 
                             <button type="submit" class="btn btn-primary">Alterar Senha</button>
                         </form>
-
-                        <hr style="margin: 30px 0;">
-
-                        <h3>Assinatura</h3>
-                        <div class="d-flex justify-between align-center">
-                            <div>
-                                <p><strong>Plano Atual:</strong> Básico - R$ 50,00/mês</p>
-                                <p>Próxima cobrança: <span id="nextBillingDate">01/12/2023</span></p>
-                            </div>
-                            <button class="btn btn-outline">Alterar Plano</button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -982,30 +1103,27 @@
     </div>
 
     <script>
-        // Dados de exemplo (em produção, isso viria de um backend)
+        // Dados globais
         let currentUser = null;
-        let cases = JSON.parse(localStorage.getItem('cases')) || [];
-        let users = JSON.parse(localStorage.getItem('users')) || [
-            { id: 1, name: "João Silva", email: "joao@exemplo.com", password: "123456" }
-        ];
+        let userData = null;
+        let cases = [];
 
         // Inicialização da aplicação
         document.addEventListener('DOMContentLoaded', function() {
-            // Verificar se há um usuário logado
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                showApp();
-            } else {
-                showLogin();
-            }
-
             // Configurar eventos
             setupEventListeners();
 
-            // Inicializar dados de exemplo se necessário
-            if (cases.length === 0) {
-                initializeSampleData();
+            // Verificar estado de autenticação
+            if (window.firebase) {
+                const { onAuthStateChanged } = window.firebase.auth;
+                onAuthStateChanged(window.firebase.auth.getAuth(), (user) => {
+                    if (user) {
+                        currentUser = user;
+                        loadUserData();
+                    } else {
+                        showLogin();
+                    }
+                });
             }
         });
 
@@ -1013,6 +1131,7 @@
         function setupEventListeners() {
             // Login
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
 
             // Formulário de caso
             document.getElementById('caseForm').addEventListener('submit', handleCaseSubmit);
@@ -1046,52 +1165,55 @@
             document.getElementById('statusFilter').addEventListener('change', filterCases);
         }
 
-        // Inicializar dados de exemplo
-        function initializeSampleData() {
-            cases = [
-                {
-                    id: 1,
-                    title: "Caso de Divórcio Consensual",
-                    description: "Processo de divórcio consensual entre as partes.",
-                    client: "Maria Santos",
-                    value: 2500.00,
-                    status: "resolved",
-                    date: "2023-10-15",
-                    userId: 1
-                },
-                {
-                    id: 2,
-                    title: "Contrato de Prestação de Serviços",
-                    description: "Elaboração de contrato para empresa de tecnologia.",
-                    client: "Tech Solutions Ltda",
-                    value: 1500.00,
-                    status: "in-progress",
-                    date: "2023-11-05",
-                    userId: 1
-                },
-                {
-                    id: 3,
-                    title: "Ação de Cobrança",
-                    description: "Cobrança judicial de dívida comercial.",
-                    client: "Comércio Express",
-                    value: 3500.00,
-                    status: "pending",
-                    date: "2023-11-10",
-                    userId: 1
-                },
-                {
-                    id: 4,
-                    title: "Acordo Trabalhista",
-                    description: "Negociação de acordo em processo trabalhista.",
-                    client: "José Oliveira",
-                    value: 4200.00,
-                    status: "agreed",
-                    date: "2023-11-12",
-                    userId: 1
-                }
-            ];
+        // Carregar dados do usuário do Firestore
+        async function loadUserData() {
+            if (!currentUser) return;
 
-            localStorage.setItem('cases', JSON.stringify(cases));
+            try {
+                const { doc, getDoc, setDoc } = window.firebase.firestore;
+                const userDocRef = doc(window.firebase.firestore.getFirestore(), 'users', currentUser.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                    cases = userData.cases || [];
+                } else {
+                    // Criar documento do usuário se não existir
+                    userData = {
+                        name: currentUser.displayName || currentUser.email.split('@')[0],
+                        email: currentUser.email,
+                        phone: '',
+                        cases: [],
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    await setDoc(userDocRef, userData);
+                    cases = [];
+                }
+
+                showApp();
+            } catch (error) {
+                console.error('Erro ao carregar dados do usuário:', error);
+                alert('Erro ao carregar dados. Tente novamente.');
+            }
+        }
+
+        // Salvar dados do usuário no Firestore
+        async function saveUserData() {
+            if (!currentUser || !userData) return;
+
+            try {
+                const { doc, updateDoc } = window.firebase.firestore;
+                const userDocRef = doc(window.firebase.firestore.getFirestore(), 'users', currentUser.uid);
+                
+                userData.updatedAt = new Date().toISOString();
+                userData.cases = cases;
+                
+                await updateDoc(userDocRef, userData);
+            } catch (error) {
+                console.error('Erro ao salvar dados do usuário:', error);
+                alert('Erro ao salvar dados. Tente novamente.');
+            }
         }
 
         // Mostrar tela de login
@@ -1106,66 +1228,157 @@
             document.getElementById('app').classList.remove('d-none');
 
             // Atualizar informações do usuário
-            document.getElementById('userName').textContent = currentUser.name;
-            document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+            document.getElementById('userName').textContent = userData.name;
+            document.getElementById('userAvatar').textContent = userData.name.charAt(0).toUpperCase();
 
             // Carregar dashboard
             showPage('dashboard');
         }
 
         // Manipular login
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginText = document.getElementById('loginText');
+            const loginLoading = document.getElementById('loginLoading');
 
-            // Verificar credenciais (em produção, isso seria feito no backend)
-            const user = users.find(u => u.email === email && u.password === password);
+            try {
+                // Mostrar loading
+                loginText.classList.add('d-none');
+                loginLoading.classList.remove('d-none');
+                loginBtn.disabled = true;
 
-            if (user) {
-                currentUser = user;
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                showApp();
-            } else {
-                alert('E-mail ou senha incorretos!');
+                const { signInWithEmailAndPassword } = window.firebase.auth;
+                await signInWithEmailAndPassword(window.firebase.auth.getAuth(), email, password);
+                
+                // Login bem-sucedido - o onAuthStateChanged irá tratar o restante
+            } catch (error) {
+                console.error('Erro no login:', error);
+                let errorMessage = 'Erro ao fazer login. Tente novamente.';
+                
+                if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'E-mail inválido.';
+                } else if (error.code === 'auth/user-not-found') {
+                    errorMessage = 'Usuário não encontrado.';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = 'Senha incorreta.';
+                }
+                
+                alert(errorMessage);
+            } finally {
+                // Restaurar botão
+                loginText.classList.remove('d-none');
+                loginLoading.classList.add('d-none');
+                loginBtn.disabled = false;
             }
         }
 
-        // Login com Google (simulação)
-        function loginWithGoogle() {
-            // Em produção, integrar com API do Google
-            currentUser = {
-                id: 2,
-                name: "Usuário Google",
-                email: "googleuser@exemplo.com"
-            };
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            showApp();
+        // Manipular registro
+        async function handleRegister(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+            if (password !== confirmPassword) {
+                alert('As senhas não coincidem!');
+                return;
+            }
+
+            const registerBtn = document.getElementById('registerBtn');
+            const registerText = document.getElementById('registerText');
+            const registerLoading = document.getElementById('registerLoading');
+
+            try {
+                // Mostrar loading
+                registerText.classList.add('d-none');
+                registerLoading.classList.remove('d-none');
+                registerBtn.disabled = true;
+
+                const { createUserWithEmailAndPassword, updateProfile } = window.firebase.auth;
+                const userCredential = await createUserWithEmailAndPassword(
+                    window.firebase.auth.getAuth(), 
+                    email, 
+                    password
+                );
+
+                // Atualizar perfil do usuário
+                await updateProfile(userCredential.user, {
+                    displayName: name
+                });
+
+                closeModal('registerModal');
+                alert('Conta criada com sucesso! Faça login para continuar.');
+                document.getElementById('registerForm').reset();
+
+            } catch (error) {
+                console.error('Erro no registro:', error);
+                let errorMessage = 'Erro ao criar conta. Tente novamente.';
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Este e-mail já está em uso.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'E-mail inválido.';
+                }
+                
+                alert(errorMessage);
+            } finally {
+                // Restaurar botão
+                registerText.classList.remove('d-none');
+                registerLoading.classList.add('d-none');
+                registerBtn.disabled = false;
+            }
         }
 
-        // Login com Facebook (simulação)
-        function loginWithFacebook() {
-            // Em produção, integrar com API do Facebook
-            currentUser = {
-                id: 3,
-                name: "Usuário Facebook",
-                email: "facebookuser@exemplo.com"
-            };
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            showApp();
+        // Login com Google
+        async function loginWithGoogle() {
+            try {
+                const { GoogleAuthProvider, signInWithPopup } = window.firebase.auth;
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(window.firebase.auth.getAuth(), provider);
+            } catch (error) {
+                console.error('Erro no login com Google:', error);
+                alert('Erro ao fazer login com Google. Tente novamente.');
+            }
+        }
+
+        // Login com Facebook
+        async function loginWithFacebook() {
+            try {
+                const { FacebookAuthProvider, signInWithPopup } = window.firebase.auth;
+                const provider = new FacebookAuthProvider();
+                await signInWithPopup(window.firebase.auth.getAuth(), provider);
+            } catch (error) {
+                console.error('Erro no login com Facebook:', error);
+                alert('Erro ao fazer login com Facebook. Tente novamente.');
+            }
         }
 
         // Mostrar formulário de registro
         function showRegisterForm() {
-            alert('Funcionalidade de registro será implementada em versão futura.');
+            openModal('registerModal');
         }
 
         // Logout
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('currentUser');
-            showLogin();
+        async function logout() {
+            try {
+                const { signOut } = window.firebase.auth;
+                await signOut(window.firebase.auth.getAuth());
+                currentUser = null;
+                userData = null;
+                cases = [];
+                showLogin();
+            } catch (error) {
+                console.error('Erro no logout:', error);
+                alert('Erro ao fazer logout. Tente novamente.');
+            }
         }
 
         // Alternar sidebar
@@ -1218,11 +1431,10 @@
 
         // Atualizar dashboard
         function updateDashboard() {
-            const userCases = cases.filter(c => c.userId === currentUser.id);
-            const totalCases = userCases.length;
-            const resolvedCases = userCases.filter(c => c.status === 'resolved' || c.status === 'agreed').length;
-            const pendingCases = userCases.filter(c => c.status === 'pending').length;
-            const totalValue = userCases.reduce((sum, c) => sum + (c.value || 0), 0);
+            const totalCases = cases.length;
+            const resolvedCases = cases.filter(c => c.status === 'resolved' || c.status === 'agreed').length;
+            const pendingCases = cases.filter(c => c.status === 'pending').length;
+            const totalValue = cases.reduce((sum, c) => sum + (c.value || 0), 0);
 
             document.getElementById('totalCases').textContent = totalCases;
             document.getElementById('resolvedCases').textContent = resolvedCases;
@@ -1233,7 +1445,7 @@
             const recentCasesTable = document.getElementById('recentCasesTable');
             recentCasesTable.innerHTML = '';
 
-            const recentCases = userCases
+            const recentCases = cases
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 5);
 
@@ -1252,7 +1464,7 @@
 
         // Atualizar tabela de casos
         function updateCasesTable() {
-            filterCases(); // Chama o filtro para atualizar com os valores atuais
+            filterCases();
         }
 
         // Filtrar casos
@@ -1263,8 +1475,7 @@
             const casesTable = document.getElementById('casesTable');
             casesTable.innerHTML = '';
 
-            const userCases = cases.filter(c => c.userId === currentUser.id);
-            const filteredCases = userCases.filter(c => {
+            const filteredCases = cases.filter(c => {
                 const matchesSearch = c.title.toLowerCase().includes(searchTerm) || 
                                      c.client.toLowerCase().includes(searchTerm);
                 const matchesStatus = !statusFilter || c.status === statusFilter;
@@ -1329,54 +1540,76 @@
         }
 
         // Manipular envio do formulário de caso
-        function handleCaseSubmit(e) {
+        async function handleCaseSubmit(e) {
             e.preventDefault();
 
-            const caseId = document.getElementById('caseId').value;
-            const title = document.getElementById('caseTitle').value;
-            const description = document.getElementById('caseDescription').value;
-            const client = document.getElementById('caseClient').value;
-            const value = parseFloat(document.getElementById('caseValue').value) || 0;
-            const status = document.getElementById('caseStatus').value;
-            const date = document.getElementById('caseDate').value;
+            const saveCaseBtn = document.getElementById('saveCaseBtn');
+            const saveCaseText = document.getElementById('saveCaseText');
+            const saveCaseLoading = document.getElementById('saveCaseLoading');
 
-            if (caseId) {
-                // Editar caso existente
-                const index = cases.findIndex(c => c.id === parseInt(caseId));
-                if (index !== -1) {
-                    cases[index] = {
-                        ...cases[index],
+            try {
+                // Mostrar loading
+                saveCaseText.classList.add('d-none');
+                saveCaseLoading.classList.remove('d-none');
+                saveCaseBtn.disabled = true;
+
+                const caseId = document.getElementById('caseId').value;
+                const title = document.getElementById('caseTitle').value;
+                const description = document.getElementById('caseDescription').value;
+                const client = document.getElementById('caseClient').value;
+                const value = parseFloat(document.getElementById('caseValue').value) || 0;
+                const status = document.getElementById('caseStatus').value;
+                const date = document.getElementById('caseDate').value;
+
+                if (caseId) {
+                    // Editar caso existente
+                    const index = cases.findIndex(c => c.id === parseInt(caseId));
+                    if (index !== -1) {
+                        cases[index] = {
+                            ...cases[index],
+                            title,
+                            description,
+                            client,
+                            value,
+                            status,
+                            date,
+                            updatedAt: new Date().toISOString()
+                        };
+                    }
+                } else {
+                    // Criar novo caso
+                    const newCase = {
+                        id: cases.length > 0 ? Math.max(...cases.map(c => c.id)) + 1 : 1,
                         title,
                         description,
                         client,
                         value,
                         status,
-                        date
+                        date,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
                     };
+                    cases.push(newCase);
                 }
-            } else {
-                // Criar novo caso
-                const newCase = {
-                    id: cases.length > 0 ? Math.max(...cases.map(c => c.id)) + 1 : 1,
-                    title,
-                    description,
-                    client,
-                    value,
-                    status,
-                    date,
-                    userId: currentUser.id
-                };
-                cases.push(newCase);
+
+                // Salvar no Firestore
+                await saveUserData();
+
+                // Mostrar mensagem de sucesso
+                alert('Caso salvo com sucesso!');
+
+                // Voltar para a lista de casos
+                showPage('cases');
+
+            } catch (error) {
+                console.error('Erro ao salvar caso:', error);
+                alert('Erro ao salvar caso. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                saveCaseText.classList.remove('d-none');
+                saveCaseLoading.classList.add('d-none');
+                saveCaseBtn.disabled = false;
             }
-
-            // Salvar no localStorage
-            localStorage.setItem('cases', JSON.stringify(cases));
-
-            // Mostrar mensagem de sucesso
-            alert('Caso salvo com sucesso!');
-
-            // Voltar para a lista de casos
-            showPage('cases');
         }
 
         // Visualizar caso
@@ -1415,11 +1648,17 @@
         }
 
         // Excluir caso
-        function deleteCase(caseId) {
+        async function deleteCase(caseId) {
             if (confirm('Tem certeza que deseja excluir este caso?')) {
-                cases = cases.filter(c => c.id !== caseId);
-                localStorage.setItem('cases', JSON.stringify(cases));
-                updateCasesTable();
+                try {
+                    cases = cases.filter(c => c.id !== caseId);
+                    await saveUserData();
+                    updateCasesTable();
+                    alert('Caso excluído com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao excluir caso:', error);
+                    alert('Erro ao excluir caso. Tente novamente.');
+                }
             }
         }
 
@@ -1430,14 +1669,13 @@
 
             // Extrair clientes únicos dos casos
             const clientsMap = new Map();
-            const userCases = cases.filter(c => c.userId === currentUser.id);
 
-            userCases.forEach(caseItem => {
+            cases.forEach(caseItem => {
                 if (!clientsMap.has(caseItem.client)) {
                     clientsMap.set(caseItem.client, {
                         name: caseItem.client,
                         email: `${caseItem.client.replace(/\s+/g, '').toLowerCase()}@exemplo.com`,
-                        phone: '(11) 9' + Math.floor(10000000 + Math.random() * 90000000), // Telefone fixo gerado uma vez
+                        phone: '(11) 9' + Math.floor(10000000 + Math.random() * 90000000),
                         activeCases: 0
                     });
                 }
@@ -1480,11 +1718,10 @@
 
         // Atualizar relatórios
         function updateReports() {
-            const userCases = cases.filter(c => c.userId === currentUser.id);
-            const totalCases = userCases.length;
-            const resolvedCases = userCases.filter(c => c.status === 'resolved' || c.status === 'agreed').length;
-            const pendingCases = userCases.filter(c => c.status === 'pending').length;
-            const totalValue = userCases.reduce((sum, c) => sum + (c.value || 0), 0);
+            const totalCases = cases.length;
+            const resolvedCases = cases.filter(c => c.status === 'resolved' || c.status === 'agreed').length;
+            const pendingCases = cases.filter(c => c.status === 'pending').length;
+            const totalValue = cases.reduce((sum, c) => sum + (c.value || 0), 0);
 
             document.getElementById('reportTotalCases').textContent = totalCases;
             document.getElementById('reportResolvedCases').textContent = resolvedCases;
@@ -1519,7 +1756,7 @@
 
             const filteredCases = cases.filter(c => {
                 const caseDate = new Date(c.date);
-                return c.userId === currentUser.id && caseDate >= startDate && caseDate <= endDate;
+                return caseDate >= startDate && caseDate <= endDate;
             });
 
             let yPos = 10;
@@ -1557,68 +1794,40 @@
 
         // Configurar página de configurações
         function setupSettings() {
-            document.getElementById('userNameInput').value = currentUser.name || '';
-            document.getElementById('userEmail').value = currentUser.email || '';
-            document.getElementById('userPhone').value = currentUser.phone || '';
+            document.getElementById('userNameInput').value = userData.name || '';
+            document.getElementById('userEmail').value = userData.email || '';
+            document.getElementById('userPhone').value = userData.phone || '';
         }
 
         // Manipular atualização de perfil
-        function handleProfileUpdate(e) {
+        async function handleProfileUpdate(e) {
             e.preventDefault();
-            const name = document.getElementById('userNameInput').value;
-            const email = document.getElementById('userEmail').value;
-            const phone = document.getElementById('userPhone').value;
+            
+            try {
+                const name = document.getElementById('userNameInput').value;
+                const email = document.getElementById('userEmail').value;
+                const phone = document.getElementById('userPhone').value;
 
-            currentUser.name = name;
-            currentUser.email = email;
-            currentUser.phone = phone;
+                userData.name = name;
+                userData.email = email;
+                userData.phone = phone;
 
-            const userIndex = users.findIndex(u => u.id === currentUser.id);
-            if (userIndex !== -1) {
-                users[userIndex] = { ...currentUser };
-                localStorage.setItem('users', JSON.stringify(users));
+                await saveUserData();
+
+                document.getElementById('userName').textContent = name;
+                document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+
+                alert('Perfil atualizado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao atualizar perfil:', error);
+                alert('Erro ao atualizar perfil. Tente novamente.');
             }
-
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            document.getElementById('userName').textContent = name;
-            document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
-
-            alert('Perfil atualizado com sucesso!');
         }
 
         // Manipular alteração de senha
-        function handlePasswordChange(e) {
+        async function handlePasswordChange(e) {
             e.preventDefault();
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (currentPassword !== currentUser.password) {
-                alert('Senha atual incorreta!');
-                return;
-            }
-
-            if (newPassword !== confirmPassword) {
-                alert('As novas senhas não coincidem!');
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                alert('A nova senha deve ter pelo menos 6 caracteres!');
-                return;
-            }
-
-            currentUser.password = newPassword;
-
-            const userIndex = users.findIndex(u => u.id === currentUser.id);
-            if (userIndex !== -1) {
-                users[userIndex] = { ...currentUser };
-                localStorage.setItem('users', JSON.stringify(users));
-            }
-
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            alert('Senha alterada com sucesso!');
-            document.getElementById('passwordForm').reset();
+            alert('Funcionalidade de alteração de senha será implementada em breve.');
         }
 
         // Abrir modal
