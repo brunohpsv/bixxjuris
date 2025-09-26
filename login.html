@@ -1319,16 +1319,21 @@
                 } else {
                     // Criar documento do usuário se não existir
                     userData = {
-                        cpf: currentUser.cpf || '',
+                        cpf: '',
                         name: currentUser.displayName || currentUser.email.split('@')[0],
                         email: currentUser.email,
-                        phone: currentUser.phone || '',
+                        phone: currentUser.phoneNumber || '',
                         cases: [],
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString()
                     };
                     await setDoc(userDocRef, userData);
                     cases = [];
+                }
+
+                // Verificar se é um novo usuário e mostrar aviso
+                if (currentUser.metadata.creationTime === currentUser.metadata.lastSignInTime) {
+                    alert('Cadastro realizado com sucesso! Bem-vindo ao BIXXJURIS.');
                 }
 
                 showApp();
@@ -1405,6 +1410,8 @@
                     errorMessage = 'Usuário não encontrado.';
                 } else if (error.code === 'auth/wrong-password') {
                     errorMessage = 'Senha incorreta.';
+                } else if (error.code === 'auth/invalid-credential') {
+                    errorMessage = 'Credenciais inválidas.';
                 }
                 
                 alert(errorMessage);
@@ -1453,7 +1460,7 @@
                 registerLoading.classList.remove('d-none');
                 registerBtn.disabled = true;
 
-                const { createUserWithEmailAndPassword, updateProfile } = window.firebase.auth;
+                const { createUserWithEmailAndPassword } = window.firebase.auth;
                 const userCredential = await createUserWithEmailAndPassword(
                     window.firebase.auth.getAuth(), 
                     email, 
@@ -1461,6 +1468,7 @@
                 );
 
                 // Atualizar perfil do usuário
+                const { updateProfile } = window.firebase.auth;
                 await updateProfile(userCredential.user, {
                     displayName: name
                 });
@@ -1482,8 +1490,9 @@
                 // Limpar formulário
                 document.getElementById('registerForm').reset();
 
-                alert('Conta criada com sucesso! Faça login para continuar.');
-                switchAuthTab('login');
+                alert('Conta criada com sucesso!');
+
+                // O onAuthStateChanged irá lidar com o redirecionamento para o painel
 
             } catch (error) {
                 console.error('Erro no registro:', error);
