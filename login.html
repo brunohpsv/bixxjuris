@@ -8,25 +8,70 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <!-- Firebase SDK -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+    import { 
+        getAuth, 
+        signInWithEmailAndPassword, 
+        createUserWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+        GoogleAuthProvider,
+        signInWithPopup,
+        FacebookAuthProvider,
+        updateProfile
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { 
+        getFirestore, 
+        doc, 
+        getDoc, 
+        setDoc, 
+        updateDoc,
+        collection,
+        query,
+        where,
+        getDocs,
+        addDoc,
+        deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBPFI-8FJJ2ACpxZhYcjW3ol9CBJzT_hAA",
+        authDomain: "bixxjuris.firebaseapp.com",
+        projectId: "bixxjuris",
+        storageBucket: "bixxjuris.firebasestorage.app",
+        messagingSenderId: "560618621657",
+        appId: "1:560618621657:web:80aa9231e2b379473dccc8",
+        measurementId: "G-WKZS0ZCKHC"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Make Firebase available globally
+    window.firebase = {
+        auth: {
+            getAuth: () => auth,
+            signInWithEmailAndPassword,
             createUserWithEmailAndPassword,
             signOut,
             onAuthStateChanged,
             GoogleAuthProvider,
             signInWithPopup,
-            FacebookAuthProvider
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            getDoc, 
-            setDoc, 
+            FacebookAuthProvider,
+            updateProfile
+        },
+        firestore: {
+            getFirestore: () => db,
+            doc,
+            getDoc,
+            setDoc,
             updateDoc,
             collection,
             query,
@@ -34,52 +79,9 @@
             getDocs,
             addDoc,
             deleteDoc
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBPFI-8FJJ2ACpxZhYcjW3ol9CBJzT_hAA",
-            authDomain: "bixxjuris.firebaseapp.com",
-            projectId: "bixxjuris",
-            storageBucket: "bixxjuris.firebasestorage.app",
-            messagingSenderId: "560618621657",
-            appId: "1:560618621657:web:80aa9231e2b379473dccc8",
-            measurementId: "G-WKZS0ZCKHC"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Make Firebase available globally
-        window.firebase = {
-            auth: {
-                getAuth: () => auth,
-                signInWithEmailAndPassword,
-                createUserWithEmailAndPassword,
-                signOut,
-                onAuthStateChanged,
-                GoogleAuthProvider,
-                signInWithPopup,
-                FacebookAuthProvider
-            },
-            firestore: {
-                getFirestore: () => db,
-                doc,
-                getDoc,
-                setDoc,
-                updateDoc,
-                collection,
-                query,
-                where,
-                getDocs,
-                addDoc,
-                deleteDoc
-            }
-        };
-    </script>
+        }
+    };
+</script>
 
     <style>
         /* Variáveis CSS para cores */
@@ -710,6 +712,64 @@
         .fade-in {
             animation: fadeIn 0.3s ease forwards;
         }
+
+	/* Animações para notificações */
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+/* Melhorias para responsividade */
+@media (max-width: 480px) {
+    .auth-form-container {
+        padding: 20px 15px;
+    }
+    
+    .social-login {
+        flex-direction: column;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Melhorias visuais para formulários */
+.form-group {
+    position: relative;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+/* Loading states melhorados */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Melhorias na tabela para mobile */
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    table {
+        min-width: 600px;
+    }
+}
     </style>
 </head>
 <body>
@@ -1304,62 +1364,66 @@
             });
         }
 
-        // Carregar dados do usuário do Firestore
-        async function loadUserData() {
-            if (!currentUser) return;
+        // Carregar dados do usuário do Firestore usando UID
+async function loadUserData() {
+    if (!currentUser) return;
 
-            try {
-                const { doc, getDoc, setDoc } = window.firebase.firestore;
-                const userDocRef = doc(window.firebase.firestore.getFirestore(), 'cadastro', currentUser.uid);
-                const userDoc = await getDoc(userDocRef);
+    try {
+        const { doc, getDoc } = window.firebase.firestore;
+        
+        // Buscar dados na coleção 'users' usando o UID como ID do documento
+        const userDocRef = doc(window.firebase.firestore.getFirestore(), 'users', currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
 
-                if (userDoc.exists()) {
-                    userData = userDoc.data();
-                    cases = userData.cases || [];
-                } else {
-                    // Criar documento do usuário se não existir
-                    userData = {
-                        cpf: '',
-                        name: currentUser.displayName || currentUser.email.split('@')[0],
-                        email: currentUser.email,
-                        phone: currentUser.phoneNumber || '',
-                        cases: [],
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
-                    };
-                    await setDoc(userDocRef, userData);
-                    cases = [];
-                }
-
-                // Verificar se é um novo usuário e mostrar aviso
-                if (currentUser.metadata.creationTime === currentUser.metadata.lastSignInTime) {
-                    alert('Cadastro realizado com sucesso! Bem-vindo ao BIXXJURIS.');
-                }
-
-                showApp();
-            } catch (error) {
-                console.error('Erro ao carregar dados do usuário:', error);
-                alert('Erro ao carregar dados. Tente novamente.');
-            }
+        if (userDoc.exists()) {
+            userData = userDoc.data();
+            cases = userData.cases || [];
+            console.log('Dados do usuário carregados:', userData);
+        } else {
+            // Criar documento do usuário se não existir (para usuários antigos)
+            console.log('Documento do usuário não encontrado. Criando novo...');
+            userData = {
+                cpf: '',
+                name: currentUser.displayName || currentUser.email.split('@')[0],
+                email: currentUser.email,
+                phone: '',
+                cases: [],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            const { setDoc } = window.firebase.firestore;
+            await setDoc(userDocRef, userData);
+            cases = [];
         }
 
-        // Salvar dados do usuário no Firestore
-        async function saveUserData() {
-            if (!currentUser || !userData) return;
+        showApp();
+    } catch (error) {
+        console.error('Erro ao carregar dados do usuário:', error);
+        showNotification('Erro ao carregar dados. Tente novamente.', 'error');
+    }
+}
 
-            try {
-                const { doc, updateDoc } = window.firebase.firestore;
-                const userDocRef = doc(window.firebase.firestore.getFirestore(), 'cadastro', currentUser.uid);
-                
-                userData.updatedAt = new Date().toISOString();
-                userData.cases = cases;
-                
-                await updateDoc(userDocRef, userData);
-            } catch (error) {
-                console.error('Erro ao salvar dados do usuário:', error);
-                alert('Erro ao salvar dados. Tente novamente.');
-            }
-        }
+        // Salvar dados do usuário no Firestore usando UID
+async function saveUserData() {
+    if (!currentUser || !userData) return;
+
+    try {
+        const { doc, updateDoc } = window.firebase.firestore;
+        
+        // Usar UID como referência do documento
+        const userDocRef = doc(window.firebase.firestore.getFirestore(), 'users', currentUser.uid);
+        
+        userData.updatedAt = new Date().toISOString();
+        userData.cases = cases;
+        
+        await updateDoc(userDocRef, userData);
+        console.log('Dados do usuário salvos com sucesso!');
+    } catch (error) {
+        console.error('Erro ao salvar dados do usuário:', error);
+        throw error; // Propagar o erro para tratamento externo
+    }
+}
 
         // Mostrar tela de autenticação
         function showAuth() {
@@ -1401,119 +1465,126 @@
                 
                 // Login bem-sucedido - o onAuthStateChanged irá tratar o restante
             } catch (error) {
-                console.error('Erro no login:', error);
-                let errorMessage = 'Erro ao fazer login. Tente novamente.';
-                
-                if (error.code === 'auth/invalid-email') {
-                    errorMessage = 'E-mail inválido.';
-                } else if (error.code === 'auth/user-not-found') {
-                    errorMessage = 'Usuário não encontrado.';
-                } else if (error.code === 'auth/wrong-password') {
-                    errorMessage = 'Senha incorreta.';
-                } else if (error.code === 'auth/invalid-credential') {
-                    errorMessage = 'Credenciais inválidas.';
-                }
-                
-                alert(errorMessage);
-            } finally {
-                // Restaurar botão
-                loginText.classList.remove('d-none');
-                loginLoading.classList.add('d-none');
-                loginBtn.disabled = false;
-            }
-        }
+    console.error('Erro no login:', error);
+    let errorMessage = 'Erro ao fazer login. Tente novamente.';
+    
+    if (error.code === 'auth/invalid-email') {
+        errorMessage = 'E-mail inválido.';
+    } else if (error.code === 'auth/user-not-found') {
+        errorMessage = 'Usuário não encontrado.';
+    } else if (error.code === 'auth/wrong-password') {
+        errorMessage = 'Senha incorreta.';
+    } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Muitas tentativas. Tente novamente mais tarde.';
+    }
+    
+    showNotification(errorMessage, 'error');
+} finally {
+    // Restaurar botão
+    loginText.classList.remove('d-none');
+    loginLoading.classList.add('d-none');
+    loginBtn.disabled = false;
+}
 
         // Manipular registro
-        async function handleRegister(e) {
-            e.preventDefault();
+async function handleRegister(e) {
+    e.preventDefault();
 
-            const cpf = document.getElementById('registerCpf').value.replace(/\D/g, '');
-            const email = document.getElementById('registerEmail').value;
-            const name = document.getElementById('registerName').value;
-            const phone = document.getElementById('registerPhone').value.replace(/\D/g, '');
-            const password = document.getElementById('registerPassword').value;
-            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+    const cpf = document.getElementById('registerCpf').value.replace(/\D/g, '');
+    const email = document.getElementById('registerEmail').value;
+    const name = document.getElementById('registerName').value;
+    const phone = document.getElementById('registerPhone').value.replace(/\D/g, '');
+    const password = document.getElementById('registerPassword').value;
+    const confirmPassword = document.getElementById('registerConfirmPassword').value;
 
-            // Validações
-            if (cpf.length !== 11) {
-                alert('CPF inválido! Digite um CPF válido com 11 dígitos.');
-                return;
-            }
+    // Validações
+    if (cpf.length !== 11) {
+        alert('CPF inválido! Digite um CPF válido com 11 dígitos.');
+        return;
+    }
 
-            if (password !== confirmPassword) {
-                alert('As senhas não coincidem!');
-                return;
-            }
+    if (password !== confirmPassword) {
+        alert('As senhas não coincidem!');
+        return;
+    }
 
-            if (phone.length < 10) {
-                alert('Telefone inválido! Digite um número válido.');
-                return;
-            }
+    if (password.length < 6) {
+        alert('A senha deve ter pelo menos 6 caracteres!');
+        return;
+    }
 
-            const registerBtn = document.getElementById('registerBtn');
-            const registerText = document.getElementById('registerText');
-            const registerLoading = document.getElementById('registerLoading');
+    if (phone.length < 10) {
+        alert('Telefone inválido! Digite um número válido.');
+        return;
+    }
 
-            try {
-                // Mostrar loading
-                registerText.classList.add('d-none');
-                registerLoading.classList.remove('d-none');
-                registerBtn.disabled = true;
+    const registerBtn = document.getElementById('registerBtn');
+    const registerText = document.getElementById('registerText');
+    const registerLoading = document.getElementById('registerLoading');
 
-                const { createUserWithEmailAndPassword } = window.firebase.auth;
-                const userCredential = await createUserWithEmailAndPassword(
-                    window.firebase.auth.getAuth(), 
-                    email, 
-                    password
-                );
+    try {
+        // Mostrar loading
+        registerText.classList.add('d-none');
+        registerLoading.classList.remove('d-none');
+        registerBtn.disabled = true;
 
-                // Atualizar perfil do usuário
-                const { updateProfile } = window.firebase.auth;
-                await updateProfile(userCredential.user, {
-                    displayName: name
-                });
+        const { createUserWithEmailAndPassword, updateProfile } = window.firebase.auth;
+        const userCredential = await createUserWithEmailAndPassword(
+            window.firebase.auth.getAuth(), 
+            email, 
+            password
+        );
 
-                // Salvar dados adicionais no Firestore
-                const userData = {
-                    cpf: cpf,
-                    name: name,
-                    email: email,
-                    phone: phone,
-                    cases: [],
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
+        // Atualizar perfil do usuário no Auth
+        await updateProfile(userCredential.user, {
+            displayName: name
+        });
 
-                const { doc, setDoc } = window.firebase.firestore;
-                await setDoc(doc(window.firebase.firestore.getFirestore(), 'cadastro', userCredential.user.uid), userData);
+        // Salvar dados adicionais no Firestore usando UID como documento
+        const userFirestoreData = {
+            cpf: cpf,
+            name: name,
+            email: email,
+            phone: phone,
+            cases: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
 
-                // Limpar formulário
-                document.getElementById('registerForm').reset();
+        const { doc, setDoc } = window.firebase.firestore;
+        await setDoc(doc(window.firebase.firestore.getFirestore(), 'users', userCredential.user.uid), userFirestoreData);
 
-                alert('Conta criada com sucesso!');
+        // Limpar formulário
+        document.getElementById('registerForm').reset();
 
-                // O onAuthStateChanged irá lidar com o redirecionamento para o painel
+        // Mostrar mensagem de sucesso
+        showNotification('Cadastro realizado com sucesso! Você já pode fazer login.', 'success');
+        
+        // Mudar para aba de login após 2 segundos
+        setTimeout(() => {
+            switchAuthTab('login');
+        }, 2000);
 
-            } catch (error) {
-                console.error('Erro no registro:', error);
-                let errorMessage = 'Erro ao criar conta. Tente novamente.';
-                
-                if (error.code === 'auth/email-already-in-use') {
-                    errorMessage = 'Este e-mail já está em uso.';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = 'E-mail inválido.';
-                }
-                
-                alert(errorMessage);
-            } finally {
-                // Restaurar botão
-                registerText.classList.remove('d-none');
-                registerLoading.classList.add('d-none');
-                registerBtn.disabled = false;
-            }
+    } catch (error) {
+        console.error('Erro no registro:', error);
+        let errorMessage = 'Erro ao criar conta. Tente novamente.';
+        
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = 'Este e-mail já está em uso.';
+        } else if (error.code === 'auth/weak-password') {
+            errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = 'E-mail inválido.';
         }
+        
+        showNotification(errorMessage, 'error');
+    } finally {
+        // Restaurar botão
+        registerText.classList.remove('d-none');
+        registerLoading.classList.add('d-none');
+        registerBtn.disabled = false;
+    }
+}
 
         // Login com Google
         async function loginWithGoogle() {
@@ -1553,6 +1624,60 @@
                 alert('Erro ao fazer logout. Tente novamente.');
             }
         }
+
+	// Mostrar notificação
+function showNotification(message, type = 'info') {
+    // Remover notificação anterior se existir
+    const existingNotification = document.getElementById('customNotification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    // Criar elemento de notificação
+    const notification = document.createElement('div');
+    notification.id = 'customNotification';
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: 600;
+        z-index: 10000;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease;
+    `;
+
+    // Cor baseada no tipo
+    if (type === 'success') {
+        notification.style.backgroundColor = '#10B981';
+    } else if (type === 'error') {
+        notification.style.backgroundColor = '#EF4444';
+    } else if (type === 'warning') {
+        notification.style.backgroundColor = '#F59E0B';
+    } else {
+        notification.style.backgroundColor = '#3B82F6';
+    }
+
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    // Remover após 5 segundos
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
+// Adicionar estilos CSS para as animações (adicione no CSS existente)
 
         // Alternar sidebar
         function toggleSidebar() {
@@ -1721,69 +1846,68 @@
             const saveCaseLoading = document.getElementById('saveCaseLoading');
 
             try {
-                // Mostrar loading
-                saveCaseText.classList.add('d-none');
-                saveCaseLoading.classList.remove('d-none');
-                saveCaseBtn.disabled = true;
+    // Mostrar loading
+    saveCaseText.classList.add('d-none');
+    saveCaseLoading.classList.remove('d-none');
+    saveCaseBtn.disabled = true;
 
-                const caseId = document.getElementById('caseId').value;
-                const title = document.getElementById('caseTitle').value;
-                const description = document.getElementById('caseDescription').value;
-                const client = document.getElementById('caseClient').value;
-                const value = parseFloat(document.getElementById('caseValue').value) || 0;
-                const status = document.getElementById('caseStatus').value;
-                const date = document.getElementById('caseDate').value;
+    const caseId = document.getElementById('caseId').value;
+    const title = document.getElementById('caseTitle').value;
+    const description = document.getElementById('caseDescription').value;
+    const client = document.getElementById('caseClient').value;
+    const value = parseFloat(document.getElementById('caseValue').value) || 0;
+    const status = document.getElementById('caseStatus').value;
+    const date = document.getElementById('caseDate').value;
 
-                if (caseId) {
-                    // Editar caso existente
-                    const index = cases.findIndex(c => c.id === parseInt(caseId));
-                    if (index !== -1) {
-                        cases[index] = {
-                            ...cases[index],
-                            title,
-                            description,
-                            client,
-                            value,
-                            status,
-                            date,
-                            updatedAt: new Date().toISOString()
-                        };
-                    }
-                } else {
-                    // Criar novo caso
-                    const newCase = {
-                        id: cases.length > 0 ? Math.max(...cases.map(c => c.id)) + 1 : 1,
-                        title,
-                        description,
-                        client,
-                        value,
-                        status,
-                        date,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
-                    };
-                    cases.push(newCase);
-                }
-
-                // Salvar no Firestore
-                await saveUserData();
-
-                // Mostrar mensagem de sucesso
-                alert('Caso salvo com sucesso!');
-
-                // Voltar para a lista de casos
-                showPage('cases');
-
-            } catch (error) {
-                console.error('Erro ao salvar caso:', error);
-                alert('Erro ao salvar caso. Tente novamente.');
-            } finally {
-                // Restaurar botão
-                saveCaseText.classList.remove('d-none');
-                saveCaseLoading.classList.add('d-none');
-                saveCaseBtn.disabled = false;
-            }
+    if (caseId) {
+        // Editar caso existente
+        const index = cases.findIndex(c => c.id === parseInt(caseId));
+        if (index !== -1) {
+            cases[index] = {
+                ...cases[index],
+                title,
+                description,
+                client,
+                value,
+                status,
+                date,
+                updatedAt: new Date().toISOString()
+            };
         }
+    } else {
+        // Criar novo caso
+        const newCase = {
+            id: cases.length > 0 ? Math.max(...cases.map(c => c.id)) + 1 : 1,
+            title,
+            description,
+            client,
+            value,
+            status,
+            date,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        cases.push(newCase);
+    }
+
+    // Salvar no Firestore
+    await saveUserData();
+
+    // Mostrar mensagem de sucesso
+    showNotification('Caso salvo com sucesso!', 'success');
+
+    // Voltar para a lista de casos
+    showPage('cases');
+
+} catch (error) {
+    console.error('Erro ao salvar caso:', error);
+    showNotification('Erro ao salvar caso. Tente novamente.', 'error');
+} finally {
+    // Restaurar botão
+    saveCaseText.classList.remove('d-none');
+    saveCaseLoading.classList.add('d-none');
+    saveCaseBtn.disabled = false;
+}
 
         // Visualizar caso
         function viewCase(caseId) {
