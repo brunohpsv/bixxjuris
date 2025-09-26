@@ -479,8 +479,8 @@
             color: var(--neutral);
         }
 
-        /* Login */
-        .login-container {
+        /* Login e Cadastro */
+        .auth-container {
             display: flex;
             min-height: 100vh;
             align-items: center;
@@ -488,26 +488,83 @@
             background: linear-gradient(135deg, var(--primary) 0%, #3B82F6 100%);
         }
 
-        .login-box {
+        .auth-box {
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
-            padding: 30px;
+            max-width: 800px;
+            display: flex;
+            overflow: hidden;
         }
 
-        .login-logo {
+        .auth-welcome {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary) 0%, #1E3A8A 100%);
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-welcome h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .auth-welcome p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .auth-form-container {
+            flex: 1;
+            padding: 40px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .auth-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--neutral);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .auth-logo {
             text-align: center;
             margin-bottom: 30px;
         }
 
-        .login-logo h1 {
+        .auth-logo h1 {
             color: var(--primary);
             font-size: 2rem;
         }
 
-        .login-logo p {
+        .auth-logo p {
             color: var(--neutral);
             font-size: 0.9rem;
         }
@@ -601,6 +658,15 @@
             .page-content {
                 padding: 15px;
             }
+
+            .auth-box {
+                flex-direction: column;
+                max-width: 400px;
+            }
+
+            .auth-welcome {
+                padding: 30px;
+            }
         }
 
         @media (max-width: 576px) {
@@ -618,6 +684,10 @@
 
             .mobile-menu-btn {
                 display: block;
+            }
+
+            .auth-form-container {
+                padding: 20px;
             }
         }
 
@@ -643,84 +713,100 @@
     </style>
 </head>
 <body>
-    <!-- Tela de Login -->
-    <div id="loginPage" class="login-container">
-        <div class="login-box">
-            <div class="login-logo">
+    <!-- Tela de Login/Cadastro -->
+    <div id="authPage" class="auth-container">
+        <div class="auth-box">
+            <div class="auth-welcome">
                 <h1>BIXXJURIS</h1>
                 <p>Gestão simplificada de casos jurídicos</p>
+                <p style="margin-top: 20px;">Soluções completas para advogados e escritórios de advocacia</p>
             </div>
 
-            <div class="social-login">
-                <button class="social-btn" onclick="loginWithGoogle()">
-                    <i class="fab fa-google"></i> Google
-                </button>
-                <button class="social-btn" onclick="loginWithFacebook()">
-                    <i class="fab fa-facebook"></i> Facebook
-                </button>
+            <div class="auth-form-container">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">Entrar</button>
+                    <button class="auth-tab" data-tab="register">Cadastrar</button>
+                </div>
+
+                <!-- Formulário de Login -->
+                <form id="loginForm" class="auth-form active">
+                    <div class="auth-logo">
+                        <h1>BIXXJURIS</h1>
+                        <p>Faça login na sua conta</p>
+                    </div>
+
+                    <div class="social-login">
+                        <button type="button" class="social-btn" onclick="loginWithGoogle()">
+                            <i class="fab fa-google"></i> Google
+                        </button>
+                        <button type="button" class="social-btn" onclick="loginWithFacebook()">
+                            <i class="fab fa-facebook"></i> Facebook
+                        </button>
+                    </div>
+
+                    <div class="divider">
+                        <span>ou</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Senha</label>
+                        <input type="password" id="password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+                        <span id="loginText">Entrar</span>
+                        <div class="loading d-none" id="loginLoading"></div>
+                    </button>
+                </form>
+
+                <!-- Formulário de Cadastro -->
+                <form id="registerForm" class="auth-form">
+                    <div class="auth-logo">
+                        <h1>BIXXJURIS</h1>
+                        <p>Crie sua conta</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerCpf">CPF</label>
+                        <input type="text" id="registerCpf" required maxlength="14" placeholder="000.000.000-00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerEmail">E-mail</label>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerName">Nome Completo</label>
+                        <input type="text" id="registerName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerPhone">Telefone Celular</label>
+                        <input type="tel" id="registerPhone" required placeholder="(11) 99999-9999">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerPassword">Senha</label>
+                        <input type="password" id="registerPassword" required minlength="6">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerConfirmPassword">Confirmar Senha</label>
+                        <input type="password" id="registerConfirmPassword" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" id="registerBtn">
+                        <span id="registerText">Criar Conta</span>
+                        <div class="loading d-none" id="registerLoading"></div>
+                    </button>
+                </form>
             </div>
-
-            <div class="divider">
-                <span>ou</span>
-            </div>
-
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email">E-mail</label>
-                    <input type="email" id="email" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Senha</label>
-                    <input type="password" id="password" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100" id="loginBtn">
-                    <span id="loginText">Entrar</span>
-                    <div class="loading d-none" id="loginLoading"></div>
-                </button>
-            </form>
-
-            <div class="text-center mt-20">
-                <p>Não tem conta? <a href="javascript:void(0)" onclick="showRegisterForm()">Cadastre-se</a></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Registro -->
-    <div class="modal" id="registerModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Criar Nova Conta</h3>
-                <button class="close-modal" onclick="closeModal('registerModal')">&times;</button>
-            </div>
-
-            <form id="registerForm">
-                <div class="form-group">
-                    <label for="registerName">Nome Completo</label>
-                    <input type="text" id="registerName" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="registerEmail">E-mail</label>
-                    <input type="email" id="registerEmail" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="registerPassword">Senha</label>
-                    <input type="password" id="registerPassword" required minlength="6">
-                </div>
-
-                <div class="form-group">
-                    <label for="registerConfirmPassword">Confirmar Senha</label>
-                    <input type="password" id="registerConfirmPassword" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100" id="registerBtn">
-                    <span id="registerText">Criar Conta</span>
-                    <div class="loading d-none" id="registerLoading"></div>
-                </button>
-            </form>
         </div>
     </div>
 
@@ -1113,6 +1199,9 @@
             // Configurar eventos
             setupEventListeners();
 
+            // Configurar máscaras de entrada
+            setupInputMasks();
+
             // Verificar estado de autenticação
             if (window.firebase) {
                 const { onAuthStateChanged } = window.firebase.auth;
@@ -1121,14 +1210,51 @@
                         currentUser = user;
                         loadUserData();
                     } else {
-                        showLogin();
+                        showAuth();
                     }
                 });
             }
         });
 
+        // Configurar máscaras de entrada
+        function setupInputMasks() {
+            const cpfInput = document.getElementById('registerCpf');
+            const phoneInput = document.getElementById('registerPhone');
+
+            if (cpfInput) {
+                cpfInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length <= 11) {
+                        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                        value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                        e.target.value = value;
+                    }
+                });
+            }
+
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length <= 11) {
+                        value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                        value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                        e.target.value = value;
+                    }
+                });
+            }
+        }
+
         // Configurar eventos
         function setupEventListeners() {
+            // Tabs de autenticação
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    switchAuthTab(tabName);
+                });
+            });
+
             // Login
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
@@ -1165,13 +1291,26 @@
             document.getElementById('statusFilter').addEventListener('change', filterCases);
         }
 
+        // Alternar entre abas de autenticação
+        function switchAuthTab(tabName) {
+            // Atualizar tabs ativas
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+            });
+
+            // Mostrar formulário correspondente
+            document.querySelectorAll('.auth-form').forEach(form => {
+                form.classList.toggle('active', form.id === tabName + 'Form');
+            });
+        }
+
         // Carregar dados do usuário do Firestore
         async function loadUserData() {
             if (!currentUser) return;
 
             try {
                 const { doc, getDoc, setDoc } = window.firebase.firestore;
-                const userDocRef = doc(window.firebase.firestore.getFirestore(), 'users', currentUser.uid);
+                const userDocRef = doc(window.firebase.firestore.getFirestore(), 'cadastro', currentUser.uid);
                 const userDoc = await getDoc(userDocRef);
 
                 if (userDoc.exists()) {
@@ -1180,9 +1319,10 @@
                 } else {
                     // Criar documento do usuário se não existir
                     userData = {
+                        cpf: currentUser.cpf || '',
                         name: currentUser.displayName || currentUser.email.split('@')[0],
                         email: currentUser.email,
-                        phone: '',
+                        phone: currentUser.phone || '',
                         cases: [],
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString()
@@ -1204,7 +1344,7 @@
 
             try {
                 const { doc, updateDoc } = window.firebase.firestore;
-                const userDocRef = doc(window.firebase.firestore.getFirestore(), 'users', currentUser.uid);
+                const userDocRef = doc(window.firebase.firestore.getFirestore(), 'cadastro', currentUser.uid);
                 
                 userData.updatedAt = new Date().toISOString();
                 userData.cases = cases;
@@ -1216,15 +1356,15 @@
             }
         }
 
-        // Mostrar tela de login
-        function showLogin() {
-            document.getElementById('loginPage').classList.remove('d-none');
+        // Mostrar tela de autenticação
+        function showAuth() {
+            document.getElementById('authPage').classList.remove('d-none');
             document.getElementById('app').classList.add('d-none');
         }
 
         // Mostrar aplicação
         function showApp() {
-            document.getElementById('loginPage').classList.add('d-none');
+            document.getElementById('authPage').classList.add('d-none');
             document.getElementById('app').classList.remove('d-none');
 
             // Atualizar informações do usuário
@@ -1280,13 +1420,26 @@
         async function handleRegister(e) {
             e.preventDefault();
 
-            const name = document.getElementById('registerName').value;
+            const cpf = document.getElementById('registerCpf').value.replace(/\D/g, '');
             const email = document.getElementById('registerEmail').value;
+            const name = document.getElementById('registerName').value;
+            const phone = document.getElementById('registerPhone').value.replace(/\D/g, '');
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
 
+            // Validações
+            if (cpf.length !== 11) {
+                alert('CPF inválido! Digite um CPF válido com 11 dígitos.');
+                return;
+            }
+
             if (password !== confirmPassword) {
                 alert('As senhas não coincidem!');
+                return;
+            }
+
+            if (phone.length < 10) {
+                alert('Telefone inválido! Digite um número válido.');
                 return;
             }
 
@@ -1312,9 +1465,25 @@
                     displayName: name
                 });
 
-                closeModal('registerModal');
-                alert('Conta criada com sucesso! Faça login para continuar.');
+                // Salvar dados adicionais no Firestore
+                const userData = {
+                    cpf: cpf,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    cases: [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                const { doc, setDoc } = window.firebase.firestore;
+                await setDoc(doc(window.firebase.firestore.getFirestore(), 'cadastro', userCredential.user.uid), userData);
+
+                // Limpar formulário
                 document.getElementById('registerForm').reset();
+
+                alert('Conta criada com sucesso! Faça login para continuar.');
+                switchAuthTab('login');
 
             } catch (error) {
                 console.error('Erro no registro:', error);
@@ -1361,11 +1530,6 @@
             }
         }
 
-        // Mostrar formulário de registro
-        function showRegisterForm() {
-            openModal('registerModal');
-        }
-
         // Logout
         async function logout() {
             try {
@@ -1374,7 +1538,7 @@
                 currentUser = null;
                 userData = null;
                 cases = [];
-                showLogin();
+                showAuth();
             } catch (error) {
                 console.error('Erro no logout:', error);
                 alert('Erro ao fazer logout. Tente novamente.');
